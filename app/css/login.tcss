@@ -1,0 +1,22 @@
+Screen {
+    align: center middle;
+}
+
+#container {
+    height: auto;
+    width: 60%;
+    padding: 2;
+    background: $panel;
+}
+
+#container > Center > * {
+    margin-bottom: 1;
+}
+
+EnGlyph {
+    background: $panel;
+}
+
+#error {
+    color: $error;
+}

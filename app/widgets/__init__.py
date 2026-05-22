@@ -1,0 +1,1 @@
+from app.widgets.post import PostWidget

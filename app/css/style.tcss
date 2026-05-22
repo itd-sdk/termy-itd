@@ -1,0 +1,45 @@
+#sidebar {
+    dock: left;
+    background: $panel;
+    padding: 1;
+    width: 15%;
+}
+
+#logo * {
+    margin-bottom: 1;
+}
+#logo *:last-child {
+    margin-left: 8;
+}
+
+.tab {
+    padding: 1;
+    border-bottom: solid #000;
+}
+.tab:hover {
+    background: $surface;
+}
+
+#about {
+    color: #666;
+}
+
+
+
+.post {
+  background: $surface;
+  margin-bottom: 1;
+  padding: 1;
+  height: auto;
+}
+
+.post-image {
+    width: auto;
+    height: auto;
+    background: blue;
+    margin-right: 1;
+}
+
+#posts > LoadingIndicator {
+    height: 3;
+}
