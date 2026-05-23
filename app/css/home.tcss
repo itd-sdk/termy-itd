@@ -1,0 +1,3 @@
+#posts > LoadingIndicator {
+    height: 3;
+}

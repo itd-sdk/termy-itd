@@ -6,8 +6,10 @@ from textual_englyph import EnGlyphText
 from itd import ITDClient
 from itd.exceptions import SessionExpiredError, SessionNotFoundError, SessionRevokedError
 
+from app.screens.home import HomeScreen
 from app.storage import storage, flush
-from time import sleep
+
+
 class LoginScreen(Screen):
     CSS_PATH = '../css/login.tcss'
     DEFAULT_CSS = """
@@ -43,5 +45,5 @@ class LoginScreen(Screen):
             storage['refresh'] = input.value
             flush()
             self.app.client = client # pyright: ignore[reportAttributeAccessIssue]
-            self.app.switch_screen('home')
+            self.app.switch_screen(HomeScreen())
 

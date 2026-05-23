@@ -11,6 +11,8 @@ from app.screens.base import BaseScreen
 from app.widgets import PostWidget
 
 class HomeScreen(BaseScreen):
+    CSS_PATH = '../css/home.tcss'
+
     def __init__(self) -> None:
         super().__init__()
 

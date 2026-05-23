@@ -10,6 +10,8 @@ from itd import Post
 from itd.enums import AttachType
 from requests import get
 
+from app.dialogs import RepostDialog
+
 
 class _ClickableStatic(Static):
     class Clicked(Message):
@@ -72,7 +74,13 @@ class PostWidget(Widget):
                 button.update(f' {self.post.likes_count}')
 
         if event.id == 'repost' and not self.post.is_reposted:
-            button = self.query_one('.post-reposts', _ClickableStatic)
-            button.add_class('active')
-            self.post.repost()
-            button.update(f'󰑖 {self.post.reposts_count}')
+            def repost(text: str | None = None):
+                if text is None:
+                    return
+
+                button = self.query_one('.post-reposts', _ClickableStatic)
+                button.add_class('active')
+                self.post.repost(text)
+                button.update(f'󰑖 {self.post.reposts_count}')
+
+            self.app.push_screen(RepostDialog(), repost)

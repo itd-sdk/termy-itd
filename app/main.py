@@ -6,19 +6,15 @@ from app.storage import storage
 
 
 class TermyITDApp(App):
-    SCREENS = {
-        'login': LoginScreen,
-        'home': HomeScreen
-    }
-    CSS_PATH = 'css/style.tcss'
+    CSS_PATH = ['css/style.tcss', 'css/post.tcss'] # https://github.com/Textualize/textual/discussions/4509
     client: ITDClient
 
     def on_mount(self):
         if storage.get('refresh'):
             self.client = ITDClient(storage['refresh'])
-            self.push_screen('home')
+            self.push_screen(HomeScreen())
         else:
-            self.push_screen('login')
+            self.push_screen(LoginScreen())
 
 app = TermyITDApp()
 app.run()
