@@ -7,7 +7,7 @@ TextArea {
 Button {
     # margin-left: 1fr;
 }
-#button {
+#dialog-buttons {
     width: 50;
     height: auto;
     align: right top;

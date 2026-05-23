@@ -51,8 +51,8 @@ class HomeScreen(BaseScreen):
 
         await loading.remove()
 
-    # def on_mount(self):
-    #     self.load_posts()
+    def on_mount(self):
+        self.query_one(VerticalScroll).focus()
 
     def on_tabbed_content_tab_activated(self, event: TabbedContent.TabActivated):
         self.tab = PostsTab((event.tab.id or '').replace('--content-tab-', ''))

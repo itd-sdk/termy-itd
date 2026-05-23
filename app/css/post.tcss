@@ -1,4 +1,4 @@
-.post {
+PostWidget {
     background: $surface;
     margin-bottom: 1;
     padding: 1 2;
@@ -27,7 +27,7 @@
     width: auto;
     margin-right: 2;
 }
-.post-report {
+.post-report, .post-delete {
     color: $error;
 }
 
@@ -61,4 +61,15 @@
 .post-views {
     width: 1fr;
     text-align: right;
+}
+
+
+OriginalPostWidget {
+    margin: 1 5;
+    padding: 1 2;
+    border: round $primary 50%;
+    background: $panel;
+}
+OriginalPostWidget .post-author-avatar {
+    background: $surface;
 }
