@@ -27,18 +27,70 @@
 
 
 .post {
-  background: $surface;
-  margin-bottom: 1;
-  padding: 1;
-  height: auto;
+    background: $surface;
+    margin-bottom: 1;
+    padding: 1 2;
+    height: auto;
 }
 
-.post-image {
+.post-author {
+    height: 3;
+}
+.post-author-avatar {
+    background: $panel;
+    padding: 1 2;
+    margin-right: 2;
+    height: 3;
+    width: 6;
+}
+.post-author-username {
+    color: #888;
+}
+
+.post-actions {
+    width: 2fr;
+    align: right top;
+}
+.post-actions > * {
     width: auto;
+    margin-right: 2;
+}
+.post-report {
+    color: $error;
+}
+
+.post-images {
     height: auto;
-    background: blue;
+    margin-bottom: 1;
+}
+.post-image {
+    margin-right: 1;
+    height: auto;
+    width: auto;
+    max-height: 25;
+}
+
+.post-stats {
+    height: 1;
+}
+.post-stats > * {
+    width: auto;
     margin-right: 1;
 }
+.post-likes.active {
+    color: $error;
+}
+.post-reposts.active {
+    color: $success;
+}
+.post-views.active {
+    color: $primary;
+}
+.post-views {
+    width: 1fr;
+    text-align: right;
+}
+
 
 #posts > LoadingIndicator {
     height: 3;
