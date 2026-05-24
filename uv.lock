@@ -72,16 +72,16 @@ wheels = [
 
 [[package]]
 name = "itd-sdk"
-version = "2.3.0"
+version = "2.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "requests" },
     { name = "sseclient-py" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/76/b6/b059d1bcf32b1b217e41e62b80fe3321e99640ab1027e69c8bed9b7fb437/itd_sdk-2.3.0.tar.gz", hash = "sha256:2fcb7db715d476721ef8d6cf4205ebae2437c39255b5d5bf9d4c3b88ac956271", size = 39526, upload-time = "2026-05-16T18:20:12.355Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d9/54/149621add60ac9424c56a6eec76c658979b98e1864231206348d44664fbe/itd_sdk-2.4.0.tar.gz", hash = "sha256:2f9c0a0c0242d5aac35b55adc04af213f31914f08a64e9a6d2625aebf013c933", size = 42901, upload-time = "2026-05-24T11:36:24.316Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cb/57/2ff97de8a814b70f98b7b2a05c8c7c18ee1dbb3489c0a18b2f3dc77b18ab/itd_sdk-2.3.0-py3-none-any.whl", hash = "sha256:52685058dcc35dc1aba9df1c671a406927259aed5cb50ac1e441931919464605", size = 54177, upload-time = "2026-05-16T18:20:11.095Z" },
+    { url = "https://files.pythonhosted.org/packages/93/50/0796a784f07185db0efc8168a1465d119d98a4c1fd923ca35f4393424b18/itd_sdk-2.4.0-py3-none-any.whl", hash = "sha256:ae987de40c3af520abd461e46bd4b22154c89734ffcb675996674bbf82f9c844", size = 59044, upload-time = "2026-05-24T11:36:25.585Z" },
 ]
 
 [[package]]
@@ -286,14 +286,16 @@ dependencies = [
     { name = "textual" },
     { name = "textual-englyph" },
     { name = "textual-image" },
+    { name = "textual-imageview" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "itd-sdk", specifier = ">=2.3.0" },
+    { name = "itd-sdk", specifier = "==2.4.0" },
     { name = "textual", specifier = ">=8.2.7" },
     { name = "textual-englyph", specifier = ">=0.5.4" },
     { name = "textual-image", specifier = ">=0.12.0" },
+    { name = "textual-imageview", specifier = ">=0.1.1" },
 ]
 
 [[package]]
@@ -337,6 +339,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c2/e7/c82ea0604874b6d51d5717a0911061ae5810e36dad2e4d2b11fa7d54cdaa/textual_image-0.12.0.tar.gz", hash = "sha256:fdd0b5ff9c8a99740bc360a99ce014d563fa97d07a5b49b472470809f57c0a74", size = 116403, upload-time = "2026-04-12T17:37:44.696Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/67/2c/38ac586a3834a3bd8cbcf0c8ea1ae23bf68b9cc13b96a67f47a825479dd3/textual_image-0.12.0-py3-none-any.whl", hash = "sha256:0b13f62fe6a29f4ed6dfd641f2779ffe92dde41f16163fa1de69158477aa50aa", size = 115626, upload-time = "2026-04-12T17:37:41.238Z" },
+]
+
+[[package]]
+name = "textual-imageview"
+version = "0.1.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pillow" },
+    { name = "rich" },
+    { name = "textual" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4b/31/3d8a517bd8694ee0d70fd260fbc20590f00a5fcde6ca1ce2edb174c000ac/textual_imageview-0.1.1.tar.gz", hash = "sha256:4299d8ed677db0adb8fe945687470cf1421dcafd2a5dddab54b6ee8ef2ab3320", size = 3232614, upload-time = "2023-01-08T05:19:11.945Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/43/56/c0514dcfdb2b67333bf4e653ca9cf0fda51004932d3b246bf835376cbaba/textual_imageview-0.1.1-py3-none-any.whl", hash = "sha256:335c8043e2f1f735b1b2ec1753a743d6762578175cd2cedae3ce67e2694800a4", size = 8875, upload-time = "2023-01-08T05:19:13.991Z" },
 ]
 
 [[package]]

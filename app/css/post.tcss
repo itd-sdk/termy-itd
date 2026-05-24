@@ -36,10 +36,12 @@ PostWidget {
     margin-bottom: 1;
 }
 .post-image {
-    margin-right: 1;
     height: auto;
     width: auto;
     max-height: 25;
+    min-width: 10;
+    min-height: 5;
+    margin-right: 1;
 }
 
 .post-stats {
@@ -72,4 +74,10 @@ OriginalPostWidget {
 }
 OriginalPostWidget .post-author-avatar {
     background: $surface;
+}
+
+.attach-error {
+    width: auto;
+    color: red;
+    align: center middle;
 }

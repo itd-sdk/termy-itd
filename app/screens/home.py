@@ -1,4 +1,4 @@
-from asyncio import new_event_loop
+from asyncio import to_thread
 
 from textual import work
 from textual.app import ComposeResult
@@ -29,14 +29,21 @@ class HomeScreen(BaseScreen):
 
         with TabbedContent():
             with TabPane('Популярное', id='popular'):
-                yield VerticalScroll(id='popular-posts')
+                yield VerticalScroll(id='popular-posts', classes='posts')
 
             with TabPane('Подписки', id='following'):
-                yield VerticalScroll(id='following-posts')
+                yield VerticalScroll(id='following-posts', classes='posts')
 
             with TabPane('Клан', id='clan'):
-                yield VerticalScroll(id='clan-posts')
+                yield VerticalScroll(id='clan-posts', classes='posts')
 
+    def _fetch_posts(self):
+        result = []
+        for i, post in enumerate(self.posts[:20]):
+            # if i >= 20:
+            #     break
+            result.append(post)
+        return result
 
     @work(exclusive=True)
     async def load_posts(self):
@@ -44,12 +51,12 @@ class HomeScreen(BaseScreen):
         loading = LoadingIndicator()
         await posts.mount(loading)
 
-        for i, post in enumerate(self.posts):
-            if i > 20:
-                break
-            await posts.mount(PostWidget(post), before=loading)
-
-        await loading.remove()
+        try:
+            fetched = await to_thread(self._fetch_posts)
+            for post in fetched:
+                await posts.mount(PostWidget(post), before=loading)
+        finally:
+            await loading.remove()
 
     def on_mount(self):
         self.query_one(VerticalScroll).focus()

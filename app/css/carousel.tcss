@@ -1,0 +1,24 @@
+CarouselDialog {
+    layers: main idx;
+    content-align: center middle;
+}
+ImageViewer, .attachment {
+    layer: main;
+}
+#idx {
+    layer: idx;
+    offset: 0 50vh;
+    text-align: center;
+}
+
+.sixel {
+    height: auto;
+    width: auto;
+    max-width: 90vw;
+    max-height: 90vh;
+}
+
+.attach-error {
+    width: auto;
+    color: red;
+}
