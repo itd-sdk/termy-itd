@@ -4,38 +4,46 @@ PostWidget {
     padding: 1 2;
     height: auto;
 }
+PostWidget:focus-within {
+    outline: $primary heavy;
+}
 
-.post-author {
+.author {
     height: 3;
 }
-.post-author-avatar {
+.author-avatar {
     background: $panel;
     padding: 1 2;
     margin-right: 2;
     height: 3;
     width: 6;
 }
-.post-author-username {
+.author-username {
     color: #888;
 }
-
-.post-actions {
-    width: 2fr;
-    align: right top;
+.author-display {
+    height: 1;
 }
-.post-actions > * {
+.author-display > * {
+    width: auto;
+}
+
+.actions {
+    width: auto;
+}
+.actions > * {
     width: auto;
     margin-right: 2;
 }
-.post-report, .post-delete {
+.report, .delete {
     color: $error;
 }
 
-.post-images {
+.images {
     height: auto;
     margin-bottom: 1;
 }
-.post-image {
+.image {
     height: auto;
     width: auto;
     max-height: 25;
@@ -44,23 +52,23 @@ PostWidget {
     margin-right: 1;
 }
 
-.post-stats {
+.stats {
     height: 1;
 }
-.post-stats > * {
+.stats > * {
     width: auto;
     margin-right: 1;
 }
-.post-likes.active {
+.likes.active {
     color: $error;
 }
-.post-reposts.active {
+.reposts.active {
     color: $success;
 }
-.post-views.active {
+.views.active {
     color: $primary;
 }
-.post-views {
+.views {
     width: 1fr;
     text-align: right;
 }
@@ -72,7 +80,11 @@ OriginalPostWidget {
     border: round $primary 50%;
     background: $panel;
 }
-OriginalPostWidget .post-author-avatar {
+OriginalPostWidget:focus-within {
+    border: round $primary;
+}
+
+OriginalPostWidget .author-avatar {
     background: $surface;
 }
 

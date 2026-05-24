@@ -27,6 +27,7 @@
 ModalScreen {
     align: center middle;
 }
+
 #dialog {
     padding: 1 2;
     max-width: 70vw;
@@ -37,4 +38,16 @@ ModalScreen {
     border: heavy $secondary 40%;
     border-title-color: $primary;
     border-title-align: center;
+}
+
+
+.verified {
+    color: #0080ff;
+    width: 1;
+    height: 1;
+    margin-left: 1;
+}
+.subscribed {
+    color: #4fc3f7;
+    # color: Gradient(#4fc3f7, #e0f7fa);
 }
