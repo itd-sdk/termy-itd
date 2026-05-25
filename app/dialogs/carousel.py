@@ -26,6 +26,9 @@ class CarouselDialog(ModalScreen):
         super().__init__()
         self.attachments = attachments
         self.idx = idx
+        self.empty = not bool(attachments)
+        if self.empty:
+            return
 
         self.files = []
         for attachment in attachments:
@@ -54,7 +57,9 @@ class CarouselDialog(ModalScreen):
         self.is_sixel = not self.is_sixel
 
     def compose(self) -> ComposeResult:
-        if self.attachment.type == AttachType.IMAGE:
+        if self.empty:
+            yield Static('Нет вложений (погоди ты как это открыл)', classes='attach-error')
+        elif self.attachment.type == AttachType.IMAGE:
             assert self.file
             if isinstance(self.file, str):
                 yield Static(self.file, classes='attach-error')

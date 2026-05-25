@@ -1,14 +1,8 @@
 TextArea {
     height: 5;
     width: 50;
-    margin-bottom: 2;
 }
 
 Button {
     # margin-left: 1fr;
-}
-#dialog-buttons {
-    width: 50;
-    height: auto;
-    align: right top;
 }

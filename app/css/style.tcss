@@ -35,9 +35,15 @@ ModalScreen {
     height: auto;
     width: auto;
     background: $surface;
-    border: heavy $secondary 40%;
+    border: heavy $secondary 70%;
     border-title-color: $primary;
     border-title-align: center;
+}
+#dialog-buttons {
+    width: 50;
+    height: auto;
+    align: right top;
+    margin-top: 2;
 }
 
 

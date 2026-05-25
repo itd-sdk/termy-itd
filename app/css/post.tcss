@@ -4,7 +4,7 @@ PostWidget {
     padding: 1 2;
     height: auto;
 }
-PostWidget:focus-within {
+PostWidget:focus {
     outline: $primary heavy;
 }
 
@@ -80,8 +80,9 @@ OriginalPostWidget {
     border: round $primary 50%;
     background: $panel;
 }
-OriginalPostWidget:focus-within {
+OriginalPostWidget:focus {
     border: round $primary;
+    outline: none;
 }
 
 OriginalPostWidget .author-avatar {

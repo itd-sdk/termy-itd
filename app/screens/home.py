@@ -2,6 +2,7 @@ from asyncio import to_thread
 
 from textual import work
 from textual.app import ComposeResult
+from textual.binding import Binding
 from textual.widgets import LoadingIndicator, TabbedContent, TabPane
 from textual.containers import VerticalScroll
 from itd import Posts
@@ -9,9 +10,14 @@ from itd.enums import PostsTab
 
 from app.screens.base import BaseScreen
 from app.widgets import PostWidget
+from app.widgets.post import OriginalPostWidget
 
 class HomeScreen(BaseScreen):
     CSS_PATH = '../css/home.tcss'
+    BINDINGS = [
+        Binding('j', 'next_post', 'Следующий пост'),
+        Binding('k', 'prev_post', 'Предыдущий пост'),
+    ]
 
     def __init__(self) -> None:
         super().__init__()
@@ -22,6 +28,7 @@ class HomeScreen(BaseScreen):
             PostsTab.CLAN: Posts.clan()
         }
         self.tab = PostsTab.POPULAR
+        self.focused_post: PostWidget | None = None
 
     def compose(self) -> ComposeResult:
         for widget in super().compose():
@@ -58,10 +65,43 @@ class HomeScreen(BaseScreen):
         finally:
             await loading.remove()
 
+    # def _outer_posts(self) -> list[PostWidget]:
+    #     container = self.query_one(f'#{self.tab.value}-posts', VerticalScroll)
+    #     return [w for w in container.children if isinstance(w, PostWidget)]
+
+    def action_next_post(self):
+        posts = [post for post in self.query(PostWidget) if not isinstance(post, OriginalPostWidget)]
+        if not posts:
+            self.notify('Нет постов', severity='warning')
+            return
+
+        if not self.focused_post:
+            posts[0].focus()
+            self.focused_post = posts[0]
+        else:
+            post = posts[min(posts.index(self.focused_post) + 1, len(posts) - 1)]
+            post.focus()
+            self.focused_post = post
+
+    def action_prev_post(self):
+        posts = [post for post in self.query(PostWidget) if not isinstance(post, OriginalPostWidget)]
+        if not posts:
+            self.notify('Нет постов', severity='warning')
+            return
+
+        if not self.focused_post:
+            posts[-1].focus()
+            self.focused_post = posts[-1]
+        else:
+            post = posts[max(posts.index(self.focused_post) - 1, 0)]
+            post.focus()
+            self.focused_post = post
+
     def on_mount(self):
         self.query_one(VerticalScroll).focus()
 
     def on_tabbed_content_tab_activated(self, event: TabbedContent.TabActivated):
+        self.focsed_post = None
         self.tab = PostsTab((event.tab.id or '').replace('--content-tab-', ''))
         if not self.posts:
             self.load_posts()

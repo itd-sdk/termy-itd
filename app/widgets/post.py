@@ -1,6 +1,8 @@
 from PIL import Image as PILImage, UnidentifiedImageError
+from pyperclip import copy
 from textual import work
 from textual.binding import Binding
+from textual.events import Focus
 from textual.reactive import reactive
 from textual.app import ComposeResult
 from textual.message import Message
@@ -13,7 +15,7 @@ from itd import Post
 from itd.file import PostAttach
 from itd.enums import AttachType
 
-from app.dialogs import RepostDialog, CarouselDialog
+from app.dialogs import RepostDialog, CarouselDialog, ConfirmDialog
 from app.cache import get_and_maybe_write
 
 
@@ -98,10 +100,18 @@ class ClickableStatic(Static):
 
 
 class PostWidget(Widget):
+    can_focus = True
     BINDINGS = [
         Binding('a', 'open_attachments', 'Открыть вложения'),
         Binding('l', 'like', 'Лайк'),
         Binding('r', 'repost', 'Репост'),
+        Binding('ctrl+c', 'copy', 'Скопировать текст'),
+        Binding('u', 'copy_url', 'Скопировать ссылку на пост'),
+        Binding('p', 'pin', 'Закрепить пост'),
+        Binding('delete', 'delete', 'Удалить пост'),
+        Binding('alt+r', 'report', 'Пожаловаться'),
+        Binding('f', 'focus_original_post', 'Сфокусироваться на оригинальном посте'),
+        # Binding('escape', 'blur', 'Расфокусироваться') # Мишка, РАСФОКУСИРУЙ МЕНЯЯЯ 😭😭😭
     ]
     def __init__(self, post: Post):
         super().__init__(classes='post')
@@ -136,12 +146,15 @@ class PostWidget(Widget):
         with Horizontal(classes='stats'):
             yield ClickableStatic(f'{"" if self.post.is_liked else ""} {self.post.likes_count}', classes=f'likes{" active" if self.post.is_liked else ""}', id='like')
             yield ClickableStatic(f' {self.post.comments_count}', classes='comments', id='comment')
-            yield ClickableStatic(f'󰑖 {self.post.reposts_count}', classes=f'reposts{" active" if self.post.is_liked else ""}', id='repost')
+            yield ClickableStatic(f'󰑖 {self.post.reposts_count}', classes=f'reposts{" active" if self.post.is_reposted else ""}', id='repost')
             yield ClickableStatic(f' {self.post.views_count}', classes=f'views{" active" if self.post.is_viewed else ""}', id='view')
 
 
     def action_open_attachments(self):
-        self.app.push_screen(CarouselDialog(self.post.attachments))
+        if self.post.attachments:
+            self.app.push_screen(CarouselDialog(self.post.attachments))
+        else:
+            self.notify('Нет вложений', severity='warning')
 
     def action_focus_original_post(self):
         if self.post.original_post:
@@ -150,7 +163,7 @@ class PostWidget(Widget):
             self.notify('Нет оригинального поста', severity='warning')
 
     def action_like(self):
-        button = self.query_one('#like', ClickableStatic)
+        button = self.query_one('.likes', ClickableStatic)
 
         if self.post.is_liked:
             button.remove_class('active')
@@ -161,13 +174,12 @@ class PostWidget(Widget):
             self.post.like()
             button.update(f' {self.post.likes_count}')
 
-
     def action_repost(self):
         def repost(text: str | None = None):
             if text is None:
                 return
 
-            button = self.query_one('#repost', ClickableStatic)
+            button = self.query_one('.reposts', ClickableStatic)
             button.add_class('active')
             self.post.repost(text)
             self.notify('Пост репостнут')
@@ -175,17 +187,56 @@ class PostWidget(Widget):
 
         self.app.push_screen(RepostDialog(), repost)
 
+    def action_copy(self):
+        if self.post.content:
+            copy(self.post.content)
+            self.notify('Текст поста скопирован')
+        else:
+            self.notify('Нечего копировать', severity='warning')
+
+    def action_copy_url(self):
+        copy(self.post.url)
+        self.notify('Ссылка на пост скопирована')
+
+    def action_pin(self):
+        self.app.push_screen(ConfirmDialog('Закрепление', 'Действительно закрепить пост?'))
+
+    def action_delete(self):
+        self.app.push_screen(ConfirmDialog('Удаление', 'Действительно удалить пост?'))
+
+    def action_report(self):
+        self.notify('todo', severity='error')
 
     def on_clickable_static_clicked(self, event: ClickableStatic.Clicked):
         event.stop()
         if 'like' in event.id:
             self.action_like()
-
         if 'repost' in event.id and not self.post.is_reposted:
             self.action_repost()
+        if 'copy' in event.id:
+            self.action_copy()
+        if 'share' in event.id:
+            self.action_copy_url()
+        if 'pin' in event.id:
+            self.action_pin()
+        if 'delete' in event.id:
+            self.action_delete()
+        if 'report' in event.id:
+            self.action_report()
+
+    def on_original_post_widget_repost_focused(self, event: OriginalPostWidget.RepostFocused):
+        self.focus()
 
 
-class OriginalPostWidget(PostWidget):
+class OriginalPostWidget(PostWidget, inherit_bindings=False):
+    BINDINGS = PostWidget.BINDINGS[:-1] + [Binding('f', 'focus_repost', 'Сфокусироваться на репосте')]
+
+    class RepostFocused(Message):
+        pass
+
+    def action_focus_repost(self):
+        self.post_message(self.RepostFocused())
+
     def compose(self) -> ComposeResult:
         with Horizontal(classes='author'):
             yield Static(self.post.author.avatar, classes='author-avatar')
