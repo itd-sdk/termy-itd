@@ -126,6 +126,7 @@ class PostWidget(Widget):
                     if self.post.author.verified:
                         yield Static('', classes='verified')
                 yield Static(f'@{self.post.author.username}', classes='author-username')
+            yield Static(self.post.created_at.strftime('%d.%m.%y %H:%M:%S'), classes='date')
             with Horizontal(classes='actions'):
                 yield Static('󰒗', classes='share')
                 yield Static('', classes='copy')
@@ -147,7 +148,9 @@ class PostWidget(Widget):
             yield ClickableStatic(f'{"" if self.post.is_liked else ""} {self.post.likes_count}', classes=f'likes{" active" if self.post.is_liked else ""}', id='like')
             yield ClickableStatic(f' {self.post.comments_count}', classes='comments', id='comment')
             yield ClickableStatic(f'󰑖 {self.post.reposts_count}', classes=f'reposts{" active" if self.post.is_reposted else ""}', id='repost')
-            yield ClickableStatic(f' {self.post.views_count}', classes=f'views{" active" if self.post.is_viewed else ""}', id='view')
+            if self.post.dominant:
+                yield ClickableStatic(self.post.dominant, classes='dominant')
+            yield ClickableStatic(f' {self.post.views_count}', classes=f'views{" active" if self.post.is_viewed else ""}{" only" if self.post.dominant is None else ""}', id='view')
 
 
     def action_open_attachments(self):
@@ -246,6 +249,7 @@ class OriginalPostWidget(PostWidget, inherit_bindings=False):
                     if self.post.author.verified:
                         yield Static('', classes='verified')
                 yield Static(f'@{self.post.author.username}', classes='author-username')
+            yield Static(self.post.created_at.strftime('%d.%m.%y %H:%M:%S'), classes='date')
             with Horizontal(classes='actions'):
                 yield Static('󰒗', classes='share')
                 yield Static('', classes='copy')
@@ -261,4 +265,6 @@ class OriginalPostWidget(PostWidget, inherit_bindings=False):
             yield ClickableStatic(f'{"" if self.post.is_liked else ""} {self.post.likes_count}', classes=f'likes{" active" if self.post.is_liked else ""}', id='original-like')
             yield ClickableStatic(f' {self.post.comments_count}', classes='comments', id='original-comment')
             yield ClickableStatic(f'󰑖 {self.post.reposts_count}', classes=f'reposts{" active" if self.post.is_liked else ""}', id='original-repost')
-            yield ClickableStatic(f' {self.post.views_count}', classes=f'views{" active" if self.post.is_viewed else ""}', id='original-view')
+            if self.post.dominant:
+                yield ClickableStatic(self.post.dominant, classes='dominant')
+            yield ClickableStatic(f' {self.post.views_count}', classes=f'views{" active" if self.post.is_viewed else ""}{" only" if self.post.dominant is None else ""}', id='original-view')

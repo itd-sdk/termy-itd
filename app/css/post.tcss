@@ -65,12 +65,21 @@ PostWidget:focus {
 .reposts.active {
     color: $success;
 }
+.views {
+    width: auto;
+}
 .views.active {
     color: $primary;
 }
-.views {
+.views.only, .dominant {
     width: 1fr;
     text-align: right;
+}
+
+.date {
+    color: #888;
+    width: auto;
+    margin-right: 3;
 }
 
 
