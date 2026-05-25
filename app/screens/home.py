@@ -6,7 +6,7 @@ from textual.binding import Binding
 from textual.widgets import LoadingIndicator, TabbedContent, TabPane
 from textual.containers import VerticalScroll
 from itd import Posts
-from itd.enums import PostsTab
+from itd.enums import PostsTab, BATCH
 
 from app.screens.base import BaseScreen
 from app.widgets import PostWidget
@@ -17,6 +17,7 @@ class HomeScreen(BaseScreen):
     BINDINGS = [
         Binding('j', 'next_post', 'Следующий пост'),
         Binding('k', 'prev_post', 'Предыдущий пост'),
+        Binding('f5', 'refresh', 'Обновить страницу')
     ]
 
     def __init__(self) -> None:
@@ -46,9 +47,10 @@ class HomeScreen(BaseScreen):
 
     def _fetch_posts(self):
         result = []
-        for i, post in enumerate(self.posts[:20]):
+        for i, post in enumerate(self.posts.load(5)):
             # if i >= 20:
             #     break
+            self.notify(f'load post {i}')
             result.append(post)
         return result
 
@@ -97,11 +99,26 @@ class HomeScreen(BaseScreen):
             post.focus()
             self.focused_post = post
 
+    def action_refresh(self):
+        posts = self.query_one(f'#{self.tab.value}-posts', VerticalScroll)
+        posts.remove_children()
+
+        loading = LoadingIndicator()
+        posts.mount(loading)
+
+        # self.posts.refresh(BATCH)
+        self.focused_post = None
+        self.posts.clear()
+        for post in self.posts.load(5):
+            posts.mount(PostWidget(post), before=loading)
+        loading.remove()
+        self.scroll_page_up(on_complete=lambda: self.notify('scrl p'))
+
     def on_mount(self):
         self.query_one(VerticalScroll).focus()
 
     def on_tabbed_content_tab_activated(self, event: TabbedContent.TabActivated):
-        self.focsed_post = None
+        self.focused_post = None
         self.tab = PostsTab((event.tab.id or '').replace('--content-tab-', ''))
         if not self.posts:
             self.load_posts()

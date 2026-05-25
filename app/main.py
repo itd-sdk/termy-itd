@@ -18,6 +18,7 @@ class TermyITDApp(App):
             self.client.config.dwell_enabled = False
             self.client.config.post_update_stats = False
             self.client.config.auto_load = False
+            self.client.config.load_on_iter = False
             self.push_screen(HomeScreen())
         else:
             self.push_screen(LoginScreen())

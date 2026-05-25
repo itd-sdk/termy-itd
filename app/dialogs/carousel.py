@@ -38,7 +38,7 @@ class CarouselDialog(ModalScreen):
                 try:
                     img = Image.open(get_and_maybe_write(attachment))
                     img.copy().verify()
-                except UnidentifiedImageError:
+                except (UnidentifiedImageError, OSError):
                     self.files.append('Не удалось открыть вложение')
                 else:
                     self.files.append(img)

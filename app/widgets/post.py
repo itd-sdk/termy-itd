@@ -41,7 +41,7 @@ class Image(HalfcellImage, Renderable=HalfcellRenderable):
         image = get_and_maybe_write(self.attachment)
         try:
             PILImage.open(image).verify()
-        except UnidentifiedImageError:
+        except (UnidentifiedImageError, OSError):
             self.app.call_from_thread(self.post_message, self.Failed(self.idx))
         else:
             self.image = image
