@@ -230,6 +230,13 @@ class PostWidget(Widget):
     def on_original_post_widget_repost_focused(self, event: OriginalPostWidget.RepostFocused):
         self.focus()
 
+    # def check_is_on_screen(self):
+    #     if self.is_on_screen:
+    #         self.notify('post on screen')
+
+    # def on_mount(self):
+    #     self.set_interval(5, self.check_is_on_screen)
+
 
 class OriginalPostWidget(PostWidget, inherit_bindings=False):
     BINDINGS = PostWidget.BINDINGS[:-1] + [Binding('f', 'focus_repost', 'Сфокусироваться на репосте')]

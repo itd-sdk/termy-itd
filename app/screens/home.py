@@ -1,4 +1,4 @@
-from asyncio import to_thread
+from asyncio import to_thread, sleep
 
 from textual import work
 from textual.app import ComposeResult
@@ -61,8 +61,7 @@ class HomeScreen(BaseScreen):
         await posts.mount(loading)
 
         try:
-            fetched = await to_thread(self._fetch_posts)
-            for post in fetched:
+            for post in await to_thread(self._fetch_posts):
                 await posts.mount(PostWidget(post), before=loading)
         finally:
             await loading.remove()
@@ -99,20 +98,26 @@ class HomeScreen(BaseScreen):
             post.focus()
             self.focused_post = post
 
-    def action_refresh(self):
+    async def action_refresh(self):
         posts = self.query_one(f'#{self.tab.value}-posts', VerticalScroll)
-        posts.remove_children()
+        await posts.remove_children()
 
         loading = LoadingIndicator()
-        posts.mount(loading)
+        await posts.mount(loading)
 
         # self.posts.refresh(BATCH)
         self.focused_post = None
         self.posts.clear()
-        for post in self.posts.load(5):
-            posts.mount(PostWidget(post), before=loading)
-        loading.remove()
-        self.scroll_page_up(on_complete=lambda: self.notify('scrl p'))
+        for post in await to_thread(self._fetch_posts):
+            await posts.mount(PostWidget(post), before=loading)
+        await loading.remove()
+
+        # analog to posts.scroll_home, original not updates scrollbar idk why
+        posts.scroll_y = 0
+        posts.scroll_target_y = 0
+        if posts._vertical_scrollbar:
+            posts._vertical_scrollbar.position = 0
+
 
     def on_mount(self):
         self.query_one(VerticalScroll).focus()
