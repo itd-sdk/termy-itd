@@ -1,8 +1,9 @@
+from time import time
+
 from PIL import Image as PILImage, UnidentifiedImageError
 from pyperclip import copy
 from textual import work
 from textual.binding import Binding
-from textual.events import Focus
 from textual.reactive import reactive
 from textual.app import ComposeResult
 from textual.message import Message
@@ -117,6 +118,9 @@ class PostWidget(Widget):
     def __init__(self, post: Post):
         super().__init__(classes='post')
         self.post = post
+        self.view_started_at: int | None = None
+        self.view_ended_at: int | None = None
+        self.seen_bottom: bool = False
 
     def compose(self) -> ComposeResult:
         with Horizontal(classes='author'):
@@ -157,6 +161,8 @@ class PostWidget(Widget):
     def action_open_attachments(self):
         if self.post.attachments:
             self.app.push_screen(CarouselDialog(self.post.attachments))
+        elif self.post.original_post and self.post.original_post.attachments:
+            self.query_one(OriginalPostWidget).action_open_attachments()
         else:
             self.notify('Нет вложений', severity='warning')
 
@@ -231,17 +237,39 @@ class PostWidget(Widget):
     def on_original_post_widget_repost_focused(self, event: OriginalPostWidget.RepostFocused):
         self.focus()
 
-    def check_is_visible(self):
-        if self.region.overlaps(self.screen.region):
-            self.post.view()
-            self.timer.stop()
+    @work
+    async def view(self):
+        assert self.view_started_at
+        assert self.view_ended_at
 
-            views = self.query_one('.views', Static)
-            views.update(f' {self.post.views_count}')
-            views.add_class('active')
+        self.post.view(duration=self.view_ended_at - self.view_started_at)
+
+        views = self.query_one('.views', Static)
+        views.update(f' {self.post.views_count}')
+        views.add_class('active')
+
+    def check_is_visible(self):
+        if self.view_started_at and self.view_ended_at:
+            return
+
+        top_visible = self.screen.region.contains_point(self.region.top_right)
+        bottom_visible = self.screen.region.contains_point(self.region.bottom_left)
+
+        if not self.seen_bottom and bottom_visible:
+            self.seen_bottom = True
+
+        if not self.view_started_at and top_visible:
+            self.view_started_at = round(time() * 1000)
+            # self.notify('view start')
+
+        elif self.seen_bottom and not self.screen.region.contains_point(self.region.top_right) and not bottom_visible:
+            self.view_ended_at = round(time() * 1000)
+            # self.notify('view end')
+            self.timer.stop()
+            self.view()
 
     def on_mount(self):
-        self.timer = self.set_interval(5, self.check_is_visible)
+        self.timer = self.set_interval(0.1, self.check_is_visible)
 
 
 class OriginalPostWidget(PostWidget, inherit_bindings=False):

@@ -50,7 +50,7 @@ class HomeScreen(BaseScreen):
         for i, post in enumerate(self.posts.load(20)):
             # if i >= 20:
             #     break
-            self.notify(f'load post {i}')
+            # self.notify(f'load post {i}')
             result.append(post)
         return result
 
