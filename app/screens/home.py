@@ -47,7 +47,7 @@ class HomeScreen(BaseScreen):
 
     def _fetch_posts(self):
         result = []
-        for i, post in enumerate(self.posts.load(5)):
+        for i, post in enumerate(self.posts.load(20)):
             # if i >= 20:
             #     break
             self.notify(f'load post {i}')

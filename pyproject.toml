@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "itd-sdk==2.4.0",
+    "itd-sdk==2.4.2",
     "pyperclip>=1.11.0",
     "textual>=8.2.7",
     "textual-englyph>=0.5.4",

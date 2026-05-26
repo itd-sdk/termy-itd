@@ -113,6 +113,7 @@ class PostWidget(Widget):
         Binding('f', 'focus_original_post', 'Сфокусироваться на оригинальном посте'),
         # Binding('escape', 'blur', 'Расфокусироваться') # Мишка, РАСФОКУСИРУЙ МЕНЯЯЯ 😭😭😭
     ]
+
     def __init__(self, post: Post):
         super().__init__(classes='post')
         self.post = post
@@ -149,8 +150,8 @@ class PostWidget(Widget):
             yield ClickableStatic(f' {self.post.comments_count}', classes='comments', id='comment')
             yield ClickableStatic(f'󰑖 {self.post.reposts_count}', classes=f'reposts{" active" if self.post.is_reposted else ""}', id='repost')
             if self.post.dominant:
-                yield ClickableStatic(self.post.dominant, classes='dominant')
-            yield ClickableStatic(f' {self.post.views_count}', classes=f'views{" active" if self.post.is_viewed else ""}{" only" if self.post.dominant is None else ""}', id='view')
+                yield Static(self.post.dominant, classes='dominant')
+            yield Static(f' {self.post.views_count}', classes=f'views{" active" if self.post.is_viewed else ""}{" only" if self.post.dominant is None else ""}', id='view')
 
 
     def action_open_attachments(self):
@@ -230,12 +231,17 @@ class PostWidget(Widget):
     def on_original_post_widget_repost_focused(self, event: OriginalPostWidget.RepostFocused):
         self.focus()
 
-    # def check_is_on_screen(self):
-    #     if self.is_on_screen:
-    #         self.notify('post on screen')
+    def check_is_visible(self):
+        if self.region.overlaps(self.screen.region):
+            self.post.view()
+            self.timer.stop()
 
-    # def on_mount(self):
-    #     self.set_interval(5, self.check_is_on_screen)
+            views = self.query_one('.views', Static)
+            views.update(f' {self.post.views_count}')
+            views.add_class('active')
+
+    def on_mount(self):
+        self.timer = self.set_interval(5, self.check_is_visible)
 
 
 class OriginalPostWidget(PostWidget, inherit_bindings=False):
@@ -274,4 +280,4 @@ class OriginalPostWidget(PostWidget, inherit_bindings=False):
             yield ClickableStatic(f'󰑖 {self.post.reposts_count}', classes=f'reposts{" active" if self.post.is_liked else ""}', id='original-repost')
             if self.post.dominant:
                 yield ClickableStatic(self.post.dominant, classes='dominant')
-            yield ClickableStatic(f' {self.post.views_count}', classes=f'views{" active" if self.post.is_viewed else ""}{" only" if self.post.dominant is None else ""}', id='original-view')
+            yield Static(f' {self.post.views_count}', classes=f'views{" active" if self.post.is_viewed else ""}{" only" if self.post.dominant is None else ""}', id='original-view')
