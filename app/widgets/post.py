@@ -110,6 +110,44 @@ class ClickableStatic(Static):
             self.post_message(self.Clicked(self.classes))
 
 
+
+def _compose_post(post: Post, original_post: bool = True) -> ComposeResult:
+    with Horizontal(classes='author'):
+        yield Static(post.author.avatar, classes='author-avatar')
+        with Vertical(classes='author-name'):
+            with Horizontal(classes='author-display'):
+                yield Static(post.author.display_name, classes='subscribed' if post.author.is_subscribed else '', markup=False)
+                if post.author.verified:
+                    yield Static('', classes='verified')
+            yield Static(f'@{post.author.username}', classes='author-username')
+        yield Static(post.created_at.strftime('%d.%m.%y %H:%M:%S'), classes='date')
+        with Horizontal(classes='actions'):
+            yield ClickableStatic('󰒗', classes='share')
+            yield ClickableStatic('', classes='copy')
+            if not post.is_owner:
+                yield ClickableStatic('', classes='report')
+            else:
+                yield ClickableStatic('', classes='pin')
+                yield ClickableStatic('󰆴', classes='delete')
+
+    yield Static(post.content)
+
+    if post.attachments:
+        yield ImageCarousel(post.attachments)
+
+    if original_post and post.original_post is not None:
+        yield OriginalPostWidget(post.original_post)
+
+    with Horizontal(classes='stats'):
+        yield ClickableStatic(f'{"" if post.is_liked else ""} {post.likes_count}', classes=f'likes{" active" if post.is_liked else ""}')
+        yield ClickableStatic(f' {post.comments_count}', classes='comments')
+        yield ClickableStatic(f'󰑖 {post.reposts_count}', classes=f'reposts{" active" if post.is_reposted else ""}')
+        if post.dominant:
+            yield Static(post.dominant, classes='dominant')
+        yield Static(f' {post.views_count}', classes=f'views{" active" if post.is_viewed else ""}{" only" if post.dominant is None else ""}')
+
+
+
 class PostWidget(Widget):
     can_focus = True
     BINDINGS = [
@@ -134,40 +172,7 @@ class PostWidget(Widget):
         self.seen_bottom: bool = False
 
     def compose(self) -> ComposeResult:
-        with Horizontal(classes='author'):
-            yield Static(self.post.author.avatar, classes='author-avatar')
-            with Vertical(classes='author-name'):
-                with Horizontal(classes='author-display'):
-                    yield Static(self.post.author.display_name, classes='subscribed' if self.post.author.is_subscribed else '')
-                    if self.post.author.verified:
-                        yield Static('', classes='verified')
-                yield Static(f'@{self.post.author.username}', classes='author-username')
-            yield Static(self.post.created_at.strftime('%d.%m.%y %H:%M:%S'), classes='date')
-            with Horizontal(classes='actions'):
-                yield ClickableStatic('󰒗', classes='share')
-                yield ClickableStatic('', classes='copy')
-                if not self.post.is_owner:
-                    yield ClickableStatic('', classes='report')
-                else:
-                    yield ClickableStatic('', classes='pin')
-                    yield ClickableStatic('󰆴', classes='delete')
-
-        yield Static(self.post.content)
-
-        if self.post.attachments:
-           yield ImageCarousel(self.post.attachments)
-
-        if self.post.original_post is not None:
-            yield OriginalPostWidget(self.post.original_post)
-
-        with Horizontal(classes='stats'):
-            yield ClickableStatic(f'{"" if self.post.is_liked else ""} {self.post.likes_count}', classes=f'likes{" active" if self.post.is_liked else ""}')
-            yield ClickableStatic(f' {self.post.comments_count}', classes='comments')
-            yield ClickableStatic(f'󰑖 {self.post.reposts_count}', classes=f'reposts{" active" if self.post.is_reposted else ""}')
-            if self.post.dominant:
-                yield Static(self.post.dominant, classes='dominant')
-            yield Static(f' {self.post.views_count}', classes=f'views{" active" if self.post.is_viewed else ""}{" only" if self.post.dominant is None else ""}')
-
+        yield from _compose_post(self.post)
 
     def action_open_attachments(self):
         if self.post.attachments:
@@ -288,30 +293,4 @@ class OriginalPostWidget(PostWidget, inherit_bindings=False):
         self.post_message(self.RepostFocused())
 
     def compose(self) -> ComposeResult:
-        with Horizontal(classes='author'):
-            yield Static(self.post.author.avatar, classes='author-avatar')
-            with Vertical(classes='author-name'):
-                with Horizontal(classes='author-display'):
-                    yield Static(self.post.author.display_name, classes='subscribed' if self.post.author.is_subscribed else '')
-                    if self.post.author.verified:
-                        yield Static('', classes='verified')
-                yield Static(f'@{self.post.author.username}', classes='author-username')
-            yield Static(self.post.created_at.strftime('%d.%m.%y %H:%M:%S'), classes='date')
-            with Horizontal(classes='actions'):
-                yield Static('󰒗', classes='share')
-                yield Static('', classes='copy')
-                yield Static('', classes='report')
-
-        yield Static(self.post.content)
-
-        if self.post.attachments:
-            yield ImageCarousel(self.post.attachments)
-
-
-        with Horizontal(classes='stats'):
-            yield ClickableStatic(f'{"" if self.post.is_liked else ""} {self.post.likes_count}', classes=f'likes{" active" if self.post.is_liked else ""}')
-            yield ClickableStatic(f' {self.post.comments_count}', classes='comments')
-            yield ClickableStatic(f'󰑖 {self.post.reposts_count}', classes=f'reposts{" active" if self.post.is_liked else ""}')
-            if self.post.dominant:
-                yield ClickableStatic(self.post.dominant, classes='dominant')
-            yield Static(f' {self.post.views_count}', classes=f'views{" active" if self.post.is_viewed else ""}{" only" if self.post.dominant is None else ""}')
+        yield from _compose_post(self.post, original_post=False)

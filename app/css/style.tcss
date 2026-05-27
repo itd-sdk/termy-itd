@@ -57,3 +57,7 @@ ModalScreen {
     color: #4fc3f7;
     # color: Gradient(#4fc3f7, #e0f7fa);
 }
+
+Static {
+    # underline: none;
+}
