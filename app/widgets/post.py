@@ -4,10 +4,11 @@ from webbrowser import open
 from PIL import Image as PILImage, UnidentifiedImageError
 from pyperclip import copy
 from textual import work
-from textual.binding import Binding
-from textual.reactive import reactive
 from textual.app import ComposeResult
+from textual.binding import Binding
+from textual.events import Click
 from textual.message import Message
+from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Static
 from textual.containers import HorizontalScroll, Horizontal, Vertical
@@ -281,6 +282,15 @@ class PostWidget(Widget):
 
     def on_mount(self):
         self.timer = self.set_interval(0.1, self.check_is_visible)
+
+    def on_click(self, event: Click):
+        if event.chain >= 2:
+            if not isinstance(self, OriginalPostWidget) and self.post.original_post is not None:
+                original_post = self.query_one(OriginalPostWidget)
+                if original_post.region.contains_point((round(event.pointer_screen_x), round(event.pointer_screen_y))):
+                    return
+            from app.screens import PostScreen # stupid circular import
+            self.app.push_screen(PostScreen(self.post))
 
 
 class OriginalPostWidget(PostWidget, inherit_bindings=False):
