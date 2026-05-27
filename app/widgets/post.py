@@ -1,4 +1,5 @@
-from time import time
+from typing import Iterable
+from webbrowser import open
 
 from PIL import Image as PILImage, UnidentifiedImageError
 from pyperclip import copy
@@ -88,16 +89,25 @@ class ImageCarousel(HorizontalScroll):
 
 class ClickableStatic(Static):
     class Clicked(Message):
-        def __init__(self, id: str) -> None:
+        def __init__(self, classes: str | frozenset[str] | Iterable[str]) -> None:
             super().__init__()
-            self.id = id
+            if isinstance(classes, (frozenset, Iterable)):
+                classes = list(classes)
+                if not classes:
+                    self.classes = ''
+                else:
+                    if 'active' in classes:
+                        classes.remove('active')
+                    self.classes = classes[0]
+            else:
+                self.classes = classes
 
     def __init__(self, content: str = "", *, id: str | None = None, classes: str | None = None) -> None:
         super().__init__(content, id=id, classes=classes)
 
     def on_click(self):
-        if self.id:
-            self.post_message(self.Clicked(self.id))
+        if self.classes:
+            self.post_message(self.Clicked(self.classes))
 
 
 class PostWidget(Widget):
@@ -108,6 +118,7 @@ class PostWidget(Widget):
         Binding('r', 'repost', 'Репост'),
         Binding('ctrl+c', 'copy', 'Скопировать текст'),
         Binding('u', 'copy_url', 'Скопировать ссылку на пост'),
+        Binding('U', 'open_url', 'Открыть пост в браузере'),
         Binding('p', 'pin', 'Закрепить пост'),
         Binding('delete', 'delete', 'Удалить пост'),
         Binding('alt+r', 'report', 'Пожаловаться'),
@@ -133,29 +144,29 @@ class PostWidget(Widget):
                 yield Static(f'@{self.post.author.username}', classes='author-username')
             yield Static(self.post.created_at.strftime('%d.%m.%y %H:%M:%S'), classes='date')
             with Horizontal(classes='actions'):
-                yield Static('󰒗', classes='share')
-                yield Static('', classes='copy')
+                yield ClickableStatic('󰒗', classes='share')
+                yield ClickableStatic('', classes='copy')
                 if not self.post.is_owner:
-                    yield Static('', classes='report')
+                    yield ClickableStatic('', classes='report')
                 else:
-                    yield Static('', classes='pin')
-                    yield Static('󰆴', classes='delete')
+                    yield ClickableStatic('', classes='pin')
+                    yield ClickableStatic('󰆴', classes='delete')
 
         yield Static(self.post.content)
 
         if self.post.attachments:
            yield ImageCarousel(self.post.attachments)
 
-        if self.post.original_post:
+        if self.post.original_post is not None:
             yield OriginalPostWidget(self.post.original_post)
 
         with Horizontal(classes='stats'):
-            yield ClickableStatic(f'{"" if self.post.is_liked else ""} {self.post.likes_count}', classes=f'likes{" active" if self.post.is_liked else ""}', id='like')
-            yield ClickableStatic(f' {self.post.comments_count}', classes='comments', id='comment')
-            yield ClickableStatic(f'󰑖 {self.post.reposts_count}', classes=f'reposts{" active" if self.post.is_reposted else ""}', id='repost')
+            yield ClickableStatic(f'{"" if self.post.is_liked else ""} {self.post.likes_count}', classes=f'likes{" active" if self.post.is_liked else ""}')
+            yield ClickableStatic(f' {self.post.comments_count}', classes='comments')
+            yield ClickableStatic(f'󰑖 {self.post.reposts_count}', classes=f'reposts{" active" if self.post.is_reposted else ""}')
             if self.post.dominant:
                 yield Static(self.post.dominant, classes='dominant')
-            yield Static(f' {self.post.views_count}', classes=f'views{" active" if self.post.is_viewed else ""}{" only" if self.post.dominant is None else ""}', id='view')
+            yield Static(f' {self.post.views_count}', classes=f'views{" active" if self.post.is_viewed else ""}{" only" if self.post.dominant is None else ""}')
 
 
     def action_open_attachments(self):
@@ -208,6 +219,10 @@ class PostWidget(Widget):
         copy(self.post.url)
         self.notify('Ссылка на пост скопирована')
 
+    def action_open_url(self):
+        open(self.post.url)
+        self.notify('Пост должен открыться в браузере')
+
     def action_pin(self):
         self.app.push_screen(ConfirmDialog('Закрепление', 'Действительно закрепить пост?'))
 
@@ -219,19 +234,19 @@ class PostWidget(Widget):
 
     def on_clickable_static_clicked(self, event: ClickableStatic.Clicked):
         event.stop()
-        if 'like' in event.id:
+        if 'like' in event.classes:
             self.action_like()
-        if 'repost' in event.id and not self.post.is_reposted:
+        if 'repost' in event.classes and not self.post.is_reposted:
             self.action_repost()
-        if 'copy' in event.id:
+        if 'copy' in event.classes:
             self.action_copy()
-        if 'share' in event.id:
+        if 'share' in event.classes:
             self.action_copy_url()
-        if 'pin' in event.id:
+        if 'pin' in event.classes:
             self.action_pin()
-        if 'delete' in event.id:
+        if 'delete' in event.classes:
             self.action_delete()
-        if 'report' in event.id:
+        if 'report' in event.classes:
             self.action_report()
 
     def on_original_post_widget_repost_focused(self, event: OriginalPostWidget.RepostFocused):
@@ -294,9 +309,9 @@ class OriginalPostWidget(PostWidget, inherit_bindings=False):
 
 
         with Horizontal(classes='stats'):
-            yield ClickableStatic(f'{"" if self.post.is_liked else ""} {self.post.likes_count}', classes=f'likes{" active" if self.post.is_liked else ""}', id='original-like')
-            yield ClickableStatic(f' {self.post.comments_count}', classes='comments', id='original-comment')
-            yield ClickableStatic(f'󰑖 {self.post.reposts_count}', classes=f'reposts{" active" if self.post.is_liked else ""}', id='original-repost')
+            yield ClickableStatic(f'{"" if self.post.is_liked else ""} {self.post.likes_count}', classes=f'likes{" active" if self.post.is_liked else ""}')
+            yield ClickableStatic(f' {self.post.comments_count}', classes='comments')
+            yield ClickableStatic(f'󰑖 {self.post.reposts_count}', classes=f'reposts{" active" if self.post.is_liked else ""}')
             if self.post.dominant:
                 yield ClickableStatic(self.post.dominant, classes='dominant')
-            yield Static(f' {self.post.views_count}', classes=f'views{" active" if self.post.is_viewed else ""}{" only" if self.post.dominant is None else ""}', id='original-view')
+            yield Static(f' {self.post.views_count}', classes=f'views{" active" if self.post.is_viewed else ""}{" only" if self.post.dominant is None else ""}')
