@@ -237,16 +237,6 @@ class PostWidget(Widget):
     def on_original_post_widget_repost_focused(self, event: OriginalPostWidget.RepostFocused):
         self.focus()
 
-    @work
-    async def view(self):
-        assert self.view_started_at
-        assert self.view_ended_at
-
-        self.post.view(duration=self.view_ended_at - self.view_started_at)
-
-        views = self.query_one('.views', Static)
-        views.update(f' {self.post.views_count}')
-        views.add_class('active')
 
     def check_is_visible(self):
         if self.view_started_at and self.view_ended_at:
@@ -258,15 +248,16 @@ class PostWidget(Widget):
         if not self.seen_bottom and bottom_visible:
             self.seen_bottom = True
 
-        if not self.view_started_at and top_visible:
-            self.view_started_at = round(time() * 1000)
-            # self.notify('view start')
+        if top_visible:
+            self.post.set_visible()
 
-        elif self.seen_bottom and not self.screen.region.contains_point(self.region.top_right) and not bottom_visible:
-            self.view_ended_at = round(time() * 1000)
-            # self.notify('view end')
+        elif self.seen_bottom and not top_visible and not bottom_visible:
             self.timer.stop()
-            self.view()
+            self.post.set_invisible()
+
+            views = self.query_one('.views', Static)
+            views.update(f' {self.post.views_count}')
+            views.add_class('active')
 
     def on_mount(self):
         self.timer = self.set_interval(0.1, self.check_is_visible)

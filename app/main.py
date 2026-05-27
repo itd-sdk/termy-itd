@@ -19,7 +19,8 @@ class TermyITDApp(App):
                 post_update_stats=False,
                 post_view_increment=True,
                 auto_load=False,
-                load_on_iter=False
+                load_on_iter=False,
+                load_on_getitem=False
             ))
             self.push_screen(HomeScreen())
         else:

@@ -19,3 +19,6 @@ tag_format = "$version"
 version_scheme = "semver"
 version_provider = "uv"
 major_version_zero = true
+
+[tool.uv.sources]
+itd-sdk = { git = "https://github.com/itd-sdk/itd-sdk" }

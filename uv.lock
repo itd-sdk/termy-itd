@@ -72,16 +72,12 @@ wheels = [
 
 [[package]]
 name = "itd-sdk"
-version = "2.4.2"
-source = { registry = "https://pypi.org/simple" }
+version = "2.4.4"
+source = { git = "https://github.com/itd-sdk/itd-sdk#3d5b115ed58c43486e129ef0f2ef852c2053fbe7" }
 dependencies = [
     { name = "pydantic" },
     { name = "requests" },
     { name = "sseclient-py" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/ac/2e/7f35f6c7e69f2d2be3af71cf64aedde77069fb08acc4e436f6acffc43e30/itd_sdk-2.4.2.tar.gz", hash = "sha256:0fc1297e649a786540fad7508fcc84aefbbb11e2a56f3e1cc6d498ef1762cf82", size = 43198, upload-time = "2026-05-26T09:51:29.477Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/f3/c4/ae76bfdbd46c1878cb5707b8e12a9f459163a88de373237b172942cb3b1f/itd_sdk-2.4.2-py3-none-any.whl", hash = "sha256:c1db4782d12575e715aaabcf14e27dffeb507ace641b3d0d70cfba95d6a619d6", size = 59259, upload-time = "2026-05-26T09:51:28.103Z" },
 ]
 
 [[package]]
@@ -301,7 +297,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "itd-sdk", specifier = "==2.4.2" },
+    { name = "itd-sdk", git = "https://github.com/itd-sdk/itd-sdk" },
     { name = "pyperclip", specifier = ">=1.11.0" },
     { name = "textual", specifier = ">=8.2.7" },
     { name = "textual-englyph", specifier = ">=0.5.4" },
