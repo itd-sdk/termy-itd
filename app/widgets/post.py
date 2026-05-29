@@ -50,7 +50,11 @@ class Image(HalfcellImage, Renderable=HalfcellRenderable):
         else:
             self.image = image
         finally:
-            self.loading = False
+
+            def _remove_loading():
+                self.loading = False
+
+            self.call_after_refresh(_remove_loading)
 
     def on_mount(self):
         self.load_image()
@@ -146,7 +150,7 @@ def _compose_post(post: Post, original_post: bool = True) -> ComposeResult:
 
     with Horizontal(classes="stats"):
         yield ClickableStatic(
-            f"{'' if post.is_liked else ''} {post.likes_count}",
+            f"{'' if post.is_liked else ''} {post.likes_count}",
             classes=f"likes{' active' if post.is_liked else ''}"
         )
         yield ClickableStatic(f" {post.comments_count}", classes="comments")
@@ -212,7 +216,7 @@ class PostWidget(Widget):
         else:
             button.add_class("active")
             self.post.like()
-            button.update(f" {self.post.likes_count}")
+            button.update(f" {self.post.likes_count}")
 
     def action_repost(self):
         def repost(text: str | None = None):

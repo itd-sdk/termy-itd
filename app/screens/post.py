@@ -1,5 +1,4 @@
 from itd import Post
-from textual import work
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.widgets import Static
