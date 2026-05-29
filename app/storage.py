@@ -1,12 +1,16 @@
 from json import dump, load
+from pathlib import Path
 
-PATH = 'storage.json'
+path = Path("storage.json")
+if path.exists():
+    storage: dict = load(path.open())
+else:
+    storage = {}
+    path.write_text("{}")
 
-with open(PATH, 'r') as fl:
-    storage: dict = load(fl)
 
 def flush():
     global storage
 
-    with open(PATH, 'w') as fl:
+    with path.open("w") as fl:
         dump(storage, fl)
