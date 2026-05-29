@@ -107,12 +107,8 @@ class PostsWidget(VerticalScroll):
 class HomeScreen(BaseScreen):
     CSS_PATH = '../css/home.tcss'
 
-    def __init__(self) -> None:
-        super().__init__()
-
     def compose(self) -> ComposeResult:
-        for widget in super().compose():
-            yield widget
+        yield from super().compose()
 
         with TabbedContent():
             with TabPane('Популярное', id='popular'):

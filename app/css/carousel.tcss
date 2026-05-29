@@ -7,7 +7,7 @@ ImageViewer, .attachment {
 }
 #idx {
     layer: idx;
-    offset: 0 50vh;
+    offset: 0 48vh;
     text-align: center;
 }
 

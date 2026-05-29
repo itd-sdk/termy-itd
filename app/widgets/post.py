@@ -1,24 +1,26 @@
 from typing import Iterable
 from webbrowser import open
 
-from PIL import Image as PILImage, UnidentifiedImageError
+from itd import Post
+from itd.enums import AttachType
+from itd.file import PostAttach
+from PIL import Image as PILImage
+from PIL import UnidentifiedImageError
 from pyperclip import copy
 from textual import work
-from textual.binding import Binding
-from textual.reactive import reactive
 from textual.app import ComposeResult
+from textual.binding import Binding
+from textual.containers import Horizontal, HorizontalScroll, Vertical
+from textual.events import Click
 from textual.message import Message
+from textual.reactive import reactive
 from textual.widget import Widget
 from textual.widgets import Static
-from textual.containers import HorizontalScroll, Horizontal, Vertical
-from textual_image.widget import HalfcellImage
 from textual_image.renderable.halfcell import Image as HalfcellRenderable
-from itd import Post
-from itd.file import PostAttach
-from itd.enums import AttachType
+from textual_image.widget import HalfcellImage
 
-from app.dialogs import RepostDialog, CarouselDialog, ConfirmDialog
 from app.cache import get_and_maybe_write
+from app.dialogs import CarouselDialog, ConfirmDialog, RepostDialog
 
 
 class Image(HalfcellImage, Renderable=HalfcellRenderable):
@@ -33,7 +35,7 @@ class Image(HalfcellImage, Renderable=HalfcellRenderable):
             self.idx = idx
 
     def __init__(self, image: PostAttach, idx: int) -> None:
-        super().__init__(classes='image')
+        super().__init__(classes="image")
         self.attachment = image
         self.loading = True
         self.idx = idx
@@ -43,7 +45,7 @@ class Image(HalfcellImage, Renderable=HalfcellRenderable):
         image = get_and_maybe_write(self.attachment)
         try:
             PILImage.open(image).verify()
-        except (UnidentifiedImageError, OSError):
+        except UnidentifiedImageError, OSError:
             self.app.call_from_thread(self.post_message, self.Failed(self.idx))
         else:
             self.image = image
@@ -61,21 +63,21 @@ class ImageCarousel(HorizontalScroll):
     failed_ids: reactive[list[int]] = reactive([], recompose=True)
 
     def __init__(self, attachments: list[PostAttach]) -> None:
-        super().__init__(classes='images')
+        super().__init__(classes="images")
         self.attachments = attachments
 
     def compose(self) -> ComposeResult:
         for i, attachment in enumerate(self.attachments):
             if i in self.failed_ids:
-                yield Static('Не удалось обработать вложение', classes='attach-error')
+                yield Static("Не удалось обработать вложение", classes="attach-error")
             elif attachment.type == AttachType.IMAGE:
                 yield Image(attachment, i)
             elif attachment.type == AttachType.VIDEO:
-                yield Static('[VIDEO]')
+                yield Static("[VIDEO]")
             elif attachment.type == AttachType.AUDIO:
-                yield Static('[AUDIO]')
+                yield Static("[AUDIO]")
             else:
-                yield Static('[MEDIA]')
+                yield Static("[MEDIA]")
 
     def on_image_clicked(self, event: Image.Clicked):
         event.stop()
@@ -86,7 +88,6 @@ class ImageCarousel(HorizontalScroll):
         self.failed_ids = [*self.failed_ids, event.idx]
 
 
-
 class ClickableStatic(Static):
     class Clicked(Message):
         def __init__(self, classes: str | frozenset[str] | Iterable[str]) -> None:
@@ -94,15 +95,17 @@ class ClickableStatic(Static):
             if isinstance(classes, (frozenset, Iterable)):
                 classes = list(classes)
                 if not classes:
-                    self.classes = ''
+                    self.classes = ""
                 else:
-                    if 'active' in classes:
-                        classes.remove('active')
+                    if "active" in classes:
+                        classes.remove("active")
                     self.classes = classes[0]
             else:
                 self.classes = classes
 
-    def __init__(self, content: str = "", *, id: str | None = None, classes: str | None = None) -> None:
+    def __init__(
+        self, content: str = "", *, id: str | None = None, classes: str | None = None
+    ) -> None:
         super().__init__(content, id=id, classes=classes)
 
     def on_click(self):
@@ -110,25 +113,28 @@ class ClickableStatic(Static):
             self.post_message(self.Clicked(self.classes))
 
 
-
 def _compose_post(post: Post, original_post: bool = True) -> ComposeResult:
-    with Horizontal(classes='author'):
-        yield Static(post.author.avatar, classes='author-avatar')
-        with Vertical(classes='author-name'):
-            with Horizontal(classes='author-display'):
-                yield Static(post.author.display_name, classes='subscribed' if post.author.is_subscribed else '', markup=False)
+    with Horizontal(classes="author"):
+        yield Static(post.author.avatar, classes="author-avatar")
+        with Vertical(classes="author-name"):
+            with Horizontal(classes="author-display"):
+                yield Static(
+                    post.author.display_name,
+                    classes="subscribed" if post.author.is_subscribed else "",
+                    markup=False
+                )
                 if post.author.verified:
-                    yield Static('', classes='verified')
-            yield Static(f'@{post.author.username}', classes='author-username')
-        yield Static(post.created_at.strftime('%d.%m.%y %H:%M:%S'), classes='date')
-        with Horizontal(classes='actions'):
-            yield ClickableStatic('󰒗', classes='share')
-            yield ClickableStatic('', classes='copy')
+                    yield Static("", classes="verified")
+            yield Static(f"@{post.author.username}", classes="author-username")
+        yield Static(post.created_at.strftime("%d.%m.%y %H:%M:%S"), classes="date")
+        with Horizontal(classes="actions"):
+            yield ClickableStatic("󰒗", classes="share")
+            yield ClickableStatic("", classes="copy")
             if not post.is_owner:
-                yield ClickableStatic('', classes='report')
+                yield ClickableStatic("", classes="report")
             else:
-                yield ClickableStatic('', classes='pin')
-                yield ClickableStatic('󰆴', classes='delete')
+                yield ClickableStatic("", classes="pin")
+                yield ClickableStatic("󰆴", classes="delete")
 
     yield Static(post.content)
 
@@ -138,34 +144,42 @@ def _compose_post(post: Post, original_post: bool = True) -> ComposeResult:
     if original_post and post.original_post is not None:
         yield OriginalPostWidget(post.original_post)
 
-    with Horizontal(classes='stats'):
-        yield ClickableStatic(f'{"" if post.is_liked else ""} {post.likes_count}', classes=f'likes{" active" if post.is_liked else ""}')
-        yield ClickableStatic(f' {post.comments_count}', classes='comments')
-        yield ClickableStatic(f'󰑖 {post.reposts_count}', classes=f'reposts{" active" if post.is_reposted else ""}')
+    with Horizontal(classes="stats"):
+        yield ClickableStatic(
+            f"{'' if post.is_liked else ''} {post.likes_count}",
+            classes=f"likes{' active' if post.is_liked else ''}"
+        )
+        yield ClickableStatic(f" {post.comments_count}", classes="comments")
+        yield ClickableStatic(
+            f"󰑖 {post.reposts_count}",
+            classes=f"reposts{' active' if post.is_reposted else ''}"
+        )
         if post.dominant:
-            yield Static(post.dominant, classes='dominant')
-        yield Static(f' {post.views_count}', classes=f'views{" active" if post.is_viewed else ""}{" only" if post.dominant is None else ""}')
-
+            yield Static(post.dominant, classes="dominant")
+        yield Static(
+            f" {post.views_count}",
+            classes=f"views{' active' if post.is_viewed else ''}{' only' if post.dominant is None else ''}"
+        )
 
 
 class PostWidget(Widget):
     can_focus = True
     BINDINGS = [
-        Binding('a', 'open_attachments', 'Открыть вложения'),
-        Binding('l', 'like', 'Лайк'),
-        Binding('r', 'repost', 'Репост'),
-        Binding('ctrl+c', 'copy', 'Скопировать текст'),
-        Binding('u', 'copy_url', 'Скопировать ссылку на пост'),
-        Binding('U', 'open_url', 'Открыть пост в браузере'),
-        Binding('p', 'pin', 'Закрепить пост'),
-        Binding('delete', 'delete', 'Удалить пост'),
-        Binding('alt+r', 'report', 'Пожаловаться'),
-        Binding('f', 'focus_original_post', 'Сфокусироваться на оригинальном посте'),
+        Binding("a", "open_attachments", "Открыть вложения"),
+        Binding("l", "like", "Лайк"),
+        Binding("r", "repost", "Репост"),
+        Binding("ctrl+c", "copy", "Скопировать текст"),
+        Binding("u", "copy_url", "Скопировать ссылку на пост"),
+        Binding("U", "open_url", "Открыть пост в браузере"),
+        Binding("p", "pin", "Закрепить пост"),
+        Binding("delete", "delete", "Удалить пост"),
+        Binding("alt+r", "report", "Пожаловаться"),
+        Binding("f", "focus_original_post", "Сфокусироваться на оригинальном посте")
         # Binding('escape', 'blur', 'Расфокусироваться') # Мишка, РАСФОКУСИРУЙ МЕНЯЯЯ 😭😭😭
     ]
 
     def __init__(self, post: Post):
-        super().__init__(classes='post')
+        super().__init__(classes="post")
         self.post = post
         self.view_started_at: int | None = None
         self.view_ended_at: int | None = None
@@ -180,83 +194,86 @@ class PostWidget(Widget):
         elif self.post.original_post and self.post.original_post.attachments:
             self.query_one(OriginalPostWidget).action_open_attachments()
         else:
-            self.notify('Нет вложений', severity='warning')
+            self.notify("Нет вложений", severity="warning")
 
     def action_focus_original_post(self):
         if self.post.original_post:
             self.query_one(OriginalPostWidget).focus()
         else:
-            self.notify('Нет оригинального поста', severity='warning')
+            self.notify("Нет оригинального поста", severity="warning")
 
     def action_like(self):
-        button = self.query_one('.likes', ClickableStatic)
+        button = self.query_one(".likes", ClickableStatic)
 
         if self.post.is_liked:
-            button.remove_class('active')
+            button.remove_class("active")
             self.post.unlike()
-            button.update(f' {self.post.likes_count}')
+            button.update(f" {self.post.likes_count}")
         else:
-            button.add_class('active')
+            button.add_class("active")
             self.post.like()
-            button.update(f' {self.post.likes_count}')
+            button.update(f" {self.post.likes_count}")
 
     def action_repost(self):
         def repost(text: str | None = None):
             if text is None:
                 return
 
-            button = self.query_one('.reposts', ClickableStatic)
-            button.add_class('active')
+            button = self.query_one(".reposts", ClickableStatic)
+            button.add_class("active")
             self.post.repost(text)
-            self.notify('Пост репостнут')
-            button.update(f'󰑖 {self.post.reposts_count}')
+            self.notify("Пост репостнут")
+            button.update(f"󰑖 {self.post.reposts_count}")
 
         self.app.push_screen(RepostDialog(), repost)
 
     def action_copy(self):
         if self.post.content:
             copy(self.post.content)
-            self.notify('Текст поста скопирован')
+            self.notify("Текст поста скопирован")
         else:
-            self.notify('Нечего копировать', severity='warning')
+            self.notify("Нечего копировать", severity="warning")
 
     def action_copy_url(self):
         copy(self.post.url)
-        self.notify('Ссылка на пост скопирована')
+        self.notify("Ссылка на пост скопирована")
 
     def action_open_url(self):
         open(self.post.url)
-        self.notify('Пост должен открыться в браузере')
+        self.notify("Пост должен открыться в браузере")
 
     def action_pin(self):
-        self.app.push_screen(ConfirmDialog('Закрепление', 'Действительно закрепить пост?'))
+        self.app.push_screen(
+            ConfirmDialog("Закрепление", "Действительно закрепить пост?")
+        )
 
     def action_delete(self):
-        self.app.push_screen(ConfirmDialog('Удаление', 'Действительно удалить пост?'))
+        self.app.push_screen(ConfirmDialog("Удаление", "Действительно удалить пост?"))
 
     def action_report(self):
-        self.notify('todo', severity='error')
+        self.notify("todo", severity="error")
 
     def on_clickable_static_clicked(self, event: ClickableStatic.Clicked):
         event.stop()
-        if 'like' in event.classes:
+        if "like" in event.classes:
             self.action_like()
-        if 'repost' in event.classes and not self.post.is_reposted:
+        if "repost" in event.classes and not self.post.is_reposted:
             self.action_repost()
-        if 'copy' in event.classes:
+        if "copy" in event.classes:
             self.action_copy()
-        if 'share' in event.classes:
+        if "share" in event.classes:
             self.action_copy_url()
-        if 'pin' in event.classes:
+        if "pin" in event.classes:
             self.action_pin()
-        if 'delete' in event.classes:
+        if "delete" in event.classes:
             self.action_delete()
-        if 'report' in event.classes:
+        if "report" in event.classes:
             self.action_report()
 
-    def on_original_post_widget_repost_focused(self, event: OriginalPostWidget.RepostFocused):
+    def on_original_post_widget_repost_focused(
+        self, event: OriginalPostWidget.RepostFocused
+    ):
         self.focus()
-
 
     def check_is_visible(self):
         if self.view_started_at and self.view_ended_at:
@@ -275,16 +292,24 @@ class PostWidget(Widget):
             self.timer.stop()
             self.post.set_invisible()
 
-            views = self.query_one('.views', Static)
-            views.update(f' {self.post.views_count}')
-            views.add_class('active')
+            views = self.query_one(".views", Static)
+            views.update(f" {self.post.views_count}")
+            views.add_class("active")
 
     def on_mount(self):
         self.timer = self.set_interval(0.1, self.check_is_visible)
 
+    def on_click(self, event: Click):
+        if event.chain >= 2:
+            from app.screens import PostScreen  # stupid circular import
+
+            self.app.push_screen(PostScreen(self.post))
+
 
 class OriginalPostWidget(PostWidget, inherit_bindings=False):
-    BINDINGS = PostWidget.BINDINGS[:-1] + [Binding('f', 'focus_repost', 'Сфокусироваться на репосте')]
+    BINDINGS = PostWidget.BINDINGS[:-1] + [
+        Binding("f", "focus_repost", "Сфокусироваться на репосте")
+    ]
 
     class RepostFocused(Message):
         pass
