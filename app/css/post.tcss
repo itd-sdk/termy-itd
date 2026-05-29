@@ -7,6 +7,9 @@ PostWidget {
 PostWidget:focus {
     outline: $primary heavy;
 }
+PostScreen > PostWidget:focus {
+    outline: none;
+}
 
 
 .author {
@@ -20,7 +23,7 @@ PostWidget:focus {
     width: 6;
 }
 .author-username {
-    color: $text-secondary;
+    color: $foreground-muted;
 }
 .author-display {
     height: 1;
@@ -78,7 +81,7 @@ PostWidget:focus {
 }
 
 .date {
-    color: $text-secondary;
+    color: $foreground-muted;
     width: auto;
     margin-right: 3;
 }
@@ -107,8 +110,7 @@ OriginalPostWidget .author-avatar {
 
 
 #heading {
-    padding: 1 2;
+    padding: 1 1 0 1;
     background: $surface;
-    outline: hkey $text-secondary;
-    text-style: none !important;
+    border-bottom: hkey $foreground-muted;
 }
