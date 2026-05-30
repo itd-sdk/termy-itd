@@ -1,15 +1,16 @@
+from itd.enums import AttachType
+from itd.file import CommentAttach, PostAttach
 from PIL import Image, UnidentifiedImageError
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.screen import ModalScreen
 from textual.reactive import reactive
+from textual.screen import ModalScreen
 from textual.widgets import Static
-from textual_imageview.viewer import ImageViewer
 from textual_image.widget import SixelImage
-from itd.enums import AttachType
-from itd.file import PostAttach
+from textual_imageview.viewer import ImageViewer
 
 from app.cache import get_and_maybe_write
+
 
 class CarouselDialog(ModalScreen):
     BINDINGS = [
@@ -22,7 +23,7 @@ class CarouselDialog(ModalScreen):
     idx: reactive[int] = reactive(0, recompose=True)
     is_sixel: reactive[bool] = reactive(True, recompose=True)
 
-    def __init__(self, attachments: list[PostAttach], idx: int = 0) -> None:
+    def __init__(self, attachments: list[PostAttach | CommentAttach], idx: int = 0) -> None:
         super().__init__()
         self.attachments = attachments
         self.idx = idx
@@ -38,7 +39,7 @@ class CarouselDialog(ModalScreen):
                 try:
                     img = Image.open(get_and_maybe_write(attachment))
                     img.copy().verify()
-                except (UnidentifiedImageError, OSError):
+                except UnidentifiedImageError, OSError:
                     self.files.append('Не удалось открыть вложение')
                 else:
                     self.files.append(img)

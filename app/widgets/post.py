@@ -62,8 +62,8 @@ class PostWidget(Widget):
         Binding('p', 'pin', 'Закрепить пост'),
         Binding('delete', 'delete', 'Удалить пост'),
         Binding('alt+r', 'report', 'Пожаловаться'),
+        Binding('enter', 'open', 'Открыть пост'),
         Binding('f', 'focus_original_post', 'Сфокусироваться на оригинальном посте')
-        # Binding('escape', 'blur', 'Расфокусироваться') # Мишка, РАСФОКУСИРУЙ МЕНЯЯЯ 😭😭😭
     ]
 
     def __init__(self, post: Post):
@@ -85,7 +85,7 @@ class PostWidget(Widget):
             self.notify('Нет вложений', severity='warning')
 
     def action_focus_original_post(self):
-        if self.post.original_post:
+        if self.post.original_post is not None:
             self.query_one(OriginalPostWidget).focus()
         else:
             self.notify('Нет оригинального поста', severity='warning')
@@ -185,9 +185,13 @@ class PostWidget(Widget):
 
     def on_click(self, event: Click):
         if event.chain >= 2:
-            from app.screens import PostScreen  # stupid circular import
+            event.stop()
+            self.action_open()
 
-            self.app.push_screen(PostScreen(self.post))
+    def action_open(self):
+        from app.screens import PostScreen  # stupid circular import
+
+        self.app.push_screen(PostScreen(self.post))
 
 
 class OriginalPostWidget(PostWidget, inherit_bindings=False):
@@ -198,6 +202,9 @@ class OriginalPostWidget(PostWidget, inherit_bindings=False):
 
     def action_focus_repost(self):
         self.post_message(self.RepostFocused())
+
+    def action_focus_original_post(self):
+        pass
 
     def compose(self) -> ComposeResult:
         yield from _compose_post(self.post, original_post=False)

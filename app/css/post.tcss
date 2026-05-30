@@ -6,11 +6,10 @@ PostWidget {
 }
 PostWidget:focus {
     padding: 0 1;
-    # outline: $primary heavy;
     border: $primary heavy;
 }
 PostScreen > VerticalScroll > PostWidget:focus {
-    # outline: none;
+    padding: 1 2;
     border: none;
 }
 
@@ -81,8 +80,8 @@ OriginalPostWidget {
     background: $panel;
 }
 OriginalPostWidget:focus {
+    padding: 1 2;
     border: round $primary;
-    outline: none;
 }
 
 OriginalPostWidget .avatar {
@@ -102,6 +101,12 @@ OriginalPostWidget .avatar {
     border-bottom: hkey $foreground-muted;
 }
 
-# PostScreen > VerticalScroll {
-#    min-height: 150vh;
-# }
+PostScreen > Horizontal {
+    height: auto;
+}
+#comment-input {
+    width: 7fr;
+}
+#add-comment {
+    width: 1fr;
+}

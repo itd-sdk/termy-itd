@@ -9,7 +9,7 @@ dependencies = [
     "pyperclip>=1.11.0",
     "textual>=8.2.7",
     "textual-englyph>=0.5.4",
-    "textual-image>=0.12.0",
+    "textual-image==0.12.0",
     "textual-imageview>=0.1.1",
 ]
 

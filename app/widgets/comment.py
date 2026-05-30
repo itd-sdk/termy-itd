@@ -1,11 +1,14 @@
+from webbrowser import open
+
 from itd.comment import Comment
+from pyperclip import copy
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.widget import Widget
 from textual.widgets import Static
 
-from app.widgets.shared import ClickableStatic, ImageCarousel
+from app.widgets.shared import CarouselDialog, ClickableStatic, ImageCarousel
 
 
 class CommentWidget(Widget):
@@ -66,3 +69,24 @@ class CommentWidget(Widget):
     def on_clickable_static_clicked(self, event: ClickableStatic.Clicked):
         if 'likes' in event.classes:
             self.action_like()
+
+    def action_open_attachments(self):
+        if self.comment.attachments:
+            self.app.push_screen(CarouselDialog(self.comment.attachments))  # pyright: ignore[reportArgumentType]
+        else:
+            self.notify('Нет вложений', severity='warning')
+
+    def action_copy(self):
+        if self.comment.content:
+            copy(self.comment.content)
+            self.notify('Текст комментария скопирован')
+        else:
+            self.notify('Нечего копировать', severity='warning')
+
+    def action_copy_url(self):
+        copy(self.comment.url)
+        self.notify('Ссылка на комментарий скопирована')
+
+    def action_open_url(self):
+        open(self.comment.url)
+        self.notify('Комментарий должен открыться в браузере')
