@@ -1,0 +1,28 @@
+CommentWidget {
+    background: $surface;
+    margin-bottom: 1;
+    padding: 1 2;
+    height: auto;
+}
+CommentWidget:focus {
+    padding: 0 1;
+    border: $primary heavy;
+}
+PostScreen > VerticalScroll > CommentWidget {
+    margin: 1 4 0 4;
+}
+
+.reply-button {
+    color: $foreground-muted;
+    width: auto;
+}
+.comment-bottom ClickableStatic.likes {
+    text-align: right;
+    width: 1fr;
+}
+.comment-bottom {
+    height: 1;
+}
+.comment-top {
+    height: 3;
+}

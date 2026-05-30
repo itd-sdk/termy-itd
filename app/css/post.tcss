@@ -5,31 +5,18 @@ PostWidget {
     height: auto;
 }
 PostWidget:focus {
-    outline: $primary heavy;
+    padding: 0 1;
+    # outline: $primary heavy;
+    border: $primary heavy;
 }
-PostScreen > PostWidget:focus {
-    outline: none;
+PostScreen > VerticalScroll > PostWidget:focus {
+    # outline: none;
+    border: none;
 }
 
 
-.author {
+.post-top {
     height: 3;
-}
-.author-avatar {
-    background: $panel;
-    padding: 1 2;
-    margin-right: 2;
-    height: 3;
-    width: 6;
-}
-.author-username {
-    color: $foreground-muted;
-}
-.author-display {
-    height: 1;
-}
-.author-display > * {
-    width: auto;
 }
 
 .actions {
@@ -98,7 +85,7 @@ OriginalPostWidget:focus {
     outline: none;
 }
 
-OriginalPostWidget .author-avatar {
+OriginalPostWidget .avatar {
     background: $surface;
 }
 
@@ -114,3 +101,7 @@ OriginalPostWidget .author-avatar {
     background: $surface;
     border-bottom: hkey $foreground-muted;
 }
+
+# PostScreen > VerticalScroll {
+#    min-height: 150vh;
+# }

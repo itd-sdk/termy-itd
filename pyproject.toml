@@ -13,6 +13,11 @@ dependencies = [
     "textual-imageview>=0.1.1",
 ]
 
+[project.optional-dependencies]
+speedup = [
+    "textual-speedups>=0.2.1",
+]
+
 [tool.commitizen]
 name = "cz_conventional_commits"
 tag_format = "$version"
@@ -22,3 +27,11 @@ major_version_zero = true
 
 [tool.uv.sources]
 itd-sdk = { git = "https://github.com/itd-sdk/itd-sdk" }
+
+[tool.ruff]
+line-length = 160
+ignore = ["COM", "D300", "E501"]
+
+[tool.ruff.format]
+quote-style = "single"
+skip-magic-trailing-comma = true

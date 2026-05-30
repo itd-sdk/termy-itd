@@ -61,3 +61,23 @@ ModalScreen {
 Static {
     link-style: bold;
 }
+
+.avatar {
+    background: $panel;
+    padding: 1 2;
+    margin-right: 2;
+    height: 3;
+    width: 6;
+}
+.username {
+    color: $foreground-muted;
+}
+.display-name {
+    height: 1;
+}
+.display-name > Static:first-child {
+    text-style: bold underline;
+}
+.display-name > * {
+    width: auto;
+}

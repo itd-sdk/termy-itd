@@ -1,12 +1,12 @@
 from asyncio import to_thread
 
+from itd import Posts
+from itd.enums import PostsTab
 from textual import work
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.widgets import LoadingIndicator, TabbedContent, TabPane
 from textual.containers import VerticalScroll
-from itd import Posts
-from itd.enums import PostsTab
+from textual.widgets import LoadingIndicator, TabbedContent, TabPane
 
 from app.screens.base import BaseScreen
 from app.widgets import PostWidget
@@ -14,11 +14,7 @@ from app.widgets.post import OriginalPostWidget
 
 
 class PostsWidget(VerticalScroll):
-    BINDINGS = [
-        Binding('j', 'next_post', 'Следующий пост'),
-        Binding('k', 'prev_post', 'Предыдущий пост'),
-        Binding('f5', 'refresh', 'Обновить страницу')
-    ]
+    BINDINGS = [Binding('j', 'next_post', 'Следующий пост'), Binding('k', 'prev_post', 'Предыдущий пост'), Binding('f5', 'refresh', 'Обновить страницу')]
 
     def __init__(self, tab: PostsTab = PostsTab.POPULAR) -> None:
         super().__init__(classes='posts', id=f'{tab.value}-posts')
@@ -27,12 +23,8 @@ class PostsWidget(VerticalScroll):
         self.focused_post: PostWidget | None = None
         self.is_load_locked: bool = False
 
-
     def _fetch_posts(self):
-        result = []
-        for post in self.posts.load(20):
-            result.append(post)
-        return result
+        return self.posts.load(20)
 
     @work(exclusive=True)
     async def load_posts(self):
@@ -94,14 +86,10 @@ class PostsWidget(VerticalScroll):
         # if self._vertical_scrollbar:
         #     self._vertical_scrollbar.position = 0
 
-
     def watch_scroll_y(self, old_value: float, new_value: float) -> None:
         super().watch_scroll_y(old_value, new_value)
-        if not self.is_load_locked and round(new_value) == self.max_scroll_y:
+        if self.posts.has_more and self.is_load_locked and round(new_value) == self.max_scroll_y:
             self.load_posts()
-
-    # def on_mount(self):
-    #     self.load_posts()
 
 
 class HomeScreen(BaseScreen):
@@ -128,4 +116,3 @@ class HomeScreen(BaseScreen):
         posts = next((posts for posts in self.query(PostsWidget) if posts.tab == PostsTab((event.tab.id or '').replace('--content-tab-', ''))))
         if not posts.posts:
             posts.load_posts()
-
