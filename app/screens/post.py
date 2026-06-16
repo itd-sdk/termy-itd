@@ -8,6 +8,7 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, VerticalScroll
 from textual.widgets import Button, Input, LoadingIndicator, Static
+from textual.worker import Worker
 
 from app.screens.base import BaseScreen
 from app.widgets import CommentWidget, PostWidget
@@ -24,6 +25,7 @@ class PostScreen(BaseScreen):
 
     def __init__(self, post: Post) -> None:
         super().__init__()
+        self.current_tab = 'post'
         self.post = post
         self.replying_comment: Comment | None = None
 
@@ -78,14 +80,16 @@ class PostScreen(BaseScreen):
         await self.query_one('#reply-header').remove()
         self.query_one('#comment-input', Input).placeholder = 'Комментарий..'
 
-    async def on_clickable_static_clicked(self):
-        await self.action_cancel_reply()
+    async def on_clickable_static_clicked(self, event: ClickableStatic.Clicked):
+        event.stop()
+        if 'error' in event.classes:
+            await self.action_cancel_reply()
 
     def action_focus_input(self):
         self.query_one('#comment-input', Input).focus()
 
     @work
-    async def _add_comment(self, value: str):
+    async def _add_comment(self, value: str) -> Comment:
         if self.replying_comment is not None:
             return self.replying_comment.reply(value)
         else:
@@ -95,7 +99,10 @@ class PostScreen(BaseScreen):
         input = self.query_one(Input)
         scroll = self.query_one(VerticalScroll)
         try:
-            comment = CommentWidget(self._add_comment(input.value))
+            worker: Worker = self._add_comment(input.value)
+            await worker.wait()
+            assert worker.result
+            comment = CommentWidget(worker.result)
         except NotFoundError:
             self.notify('Пост не найден', severity='error')
         except BannedWordError:

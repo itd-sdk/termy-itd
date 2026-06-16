@@ -1,0 +1,77 @@
+NotificationWidget {
+    background: $surface;
+    padding: 1;
+    margin-bottom: 1;
+    height: 5;
+    layout: horizontal;
+}
+NotificationWidget:focus {
+    padding: 0;
+    border: $primary heavy;
+}
+
+NotificationWidget.unread {
+    background: $panel;
+}
+
+/*NotificationWidget.red {
+    background: $error-darken-2;
+}
+NotificationWidget.green {
+    background: $success-darken-2;
+}
+NotificationWidget.blue {
+    background: $primary-darken-2;
+}*/
+NotificationWidget .avatar {
+    padding: 0;
+    text-align: center;
+    background: transparent;
+    height: 3;
+}
+NotificationWidget.red .avatar {
+    border: round $error;
+}
+NotificationWidget.green .avatar {
+    border: round $success;
+}
+NotificationWidget.blue .avatar {
+    border: round $primary;
+}
+NotificationWidget.purple .avatar {
+    border: round $accent;
+}
+
+.notification-text {
+    color: $foreground-muted;
+    margin-left: 1;
+    width: 1fr;
+}
+
+.notification-date {
+     color: $foreground-muted;
+}
+
+NotificationsScreen > Horizontal {
+    height: auto;
+}
+NotificationsScreen > Horizontal > .h1 {
+    width: 6fr;
+}
+
+NotificationsScreen > Horizontal > Button {
+    width: 1fr;
+}
+
+.notification-actions {
+    width: auto;
+}
+
+.notification-actions > * {
+    width: auto;
+    margin-right: 2;
+}
+
+.read {
+    color: $primary;
+}

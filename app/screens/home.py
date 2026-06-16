@@ -1,5 +1,3 @@
-from asyncio import to_thread
-
 from itd import Posts
 from itd.enums import PostsTab
 from textual import work
@@ -23,9 +21,6 @@ class PostsWidget(VerticalScroll):
         self.focused_post: PostWidget | None = None
         self.is_load_locked: bool = False
 
-    def _fetch_posts(self):
-        return self.posts.load(20)
-
     @work
     async def load_posts(self):
         if self.is_load_locked:
@@ -38,8 +33,8 @@ class PostsWidget(VerticalScroll):
         loading = LoadingIndicator()
         await self.mount(loading)
         try:
-            for post in await to_thread(self._fetch_posts):
-                self.mount(PostWidget(post), before=loading)
+            for post in self.posts.load(20):
+                await self.mount(PostWidget(post), before=loading)
         finally:
             await loading.remove()
 
@@ -93,7 +88,11 @@ class PostsWidget(VerticalScroll):
 
 
 class HomeScreen(BaseScreen):
-    CSS_PATH = '../css/home.tcss'
+    # CSS_PATH = '../css/home.tcss'
+
+    def __init__(self):
+        super().__init__()
+        self.current_tab: str = 'home'
 
     def compose(self) -> ComposeResult:
         yield from super().compose()

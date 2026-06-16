@@ -2,8 +2,6 @@ from typing import Iterable
 
 from itd.enums import AttachType
 from itd.file import CommentAttach, PostAttach
-from PIL import Image as PILImage
-from PIL import UnidentifiedImageError
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import HorizontalScroll
@@ -28,7 +26,7 @@ class ClickableStatic(Static):
                 else:
                     if 'active' in classes:
                         classes.remove('active')
-                    self.classes = classes[0]
+                    self.classes = ' '.join(classes)
             else:
                 self.classes = classes
 

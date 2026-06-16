@@ -19,9 +19,17 @@
 .tab:hover {
     background: $surface;
 }
+.active-tab {
+    text-style: bold;
+    background: $surface;
+}
 
 #about {
     color: #666;
+}
+
+VerticalScroll > LoadingIndicator {
+    height: 3;
 }
 
 ModalScreen {
@@ -80,4 +88,9 @@ Static {
 }
 .display-name > * {
     width: auto;
+}
+
+.h1 {
+    text-style: bold underline;
+    margin: 1;
 }
