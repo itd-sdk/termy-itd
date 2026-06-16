@@ -18,8 +18,7 @@ class PostScreen(BaseScreen):
     BINDINGS = [
         Binding('f5', 'refresh', 'Обновить страницу'),
         Binding('escape', 'app.pop_screen', 'Назад'),
-        Binding('c', 'focus_comment', 'Сфокусироваться на вводе комментария'),
-        Binding('x', 'cancel_reply', 'Отменить ответ')
+        Binding('c', 'focus_input', 'Сфокусироваться на вводе комментария')
     ]
     # CSS_PATH = '../css/post.tcss'
 
@@ -41,28 +40,29 @@ class PostScreen(BaseScreen):
     def on_input_changed(self, event: Input.Changed):
         self.query_one(Button).disabled = not bool(event.input.value)
 
-    def on_button_pressed(self):
-        self.add_comment()
+    async def on_button_pressed(self):
+        await self.add_comment()
 
-    def on_input_submitted(self):
-        self.add_comment()
+    async def on_input_submitted(self):
+        await self.add_comment()
 
-    def on_comment_widget_replied(self, event: CommentWidget.Replied):
-        self.notify(event.comment.content)
+    async def on_comment_widget_replied(self, event: CommentWidget.Replied):
         event.stop()
         if self.replying_comment is not None:
-            self.action_cancel_reply()
+            self.log('clr')
+            await self.action_cancel_reply()
+
         self.replying_comment = event.comment
         if self.replying_comment.content:
             if len(self.replying_comment.content) > 100:
-                content = self.replying_comment.content[:100]
+                content = self.replying_comment.content[:100].split('\n')[0]
             else:
                 content = self.replying_comment.content
         elif self.replying_comment.attachments:
             content = f'[i]Вложения ({len(self.replying_comment.attachments)}шт)[/i]'
         else:
             content = 'Пустой комментарий??'
-        self.mount(
+        await self.mount(
             Horizontal(
                 Static(f'  {self.replying_comment.author.avatar} [bold underline]{self.replying_comment.author.display_name}[/]  {content}'),
                 ClickableStatic('', classes='error'),
@@ -71,37 +71,42 @@ class PostScreen(BaseScreen):
             after='VerticalScroll'
         )
         self.query_one('#comment-input', Input).placeholder = 'Ответ..'
+        self.action_focus_input()
 
-    def action_cancel_reply(self):
+    async def action_cancel_reply(self):
         self.replying_comment = None
-        self.query_one('#reply-header').remove()
+        await self.query_one('#reply-header').remove()
         self.query_one('#comment-input', Input).placeholder = 'Комментарий..'
 
-    def on_clickable_static_clicked(self):
-        self.action_cancel_reply()
+    async def on_clickable_static_clicked(self):
+        await self.action_cancel_reply()
 
-    def action_focus_comment(self):
+    def action_focus_input(self):
         self.query_one('#comment-input', Input).focus()
 
     @work
     async def _add_comment(self, value: str):
-        self.post.add_comment(value)
+        if self.replying_comment is not None:
+            return self.replying_comment.reply(value)
+        else:
+            return self.post.add_comment(value)
 
-    def add_comment(self):
+    async def add_comment(self):
         input = self.query_one(Input)
         scroll = self.query_one(VerticalScroll)
         try:
-            self._add_comment(input.value)
+            comment = CommentWidget(self._add_comment(input.value))
         except NotFoundError:
             self.notify('Пост не найден', severity='error')
         except BannedWordError:
             self.notify('В комментарии содержутся запрещенные слова', severity='error')
         else:
-            comment = CommentWidget(self.post.comments[0])
-            scroll.mount(comment, before=1)
+            await scroll.mount(comment, before=1)
             scroll.scroll_to_widget(comment)
             comment.focus()
             input.clear()
+            if self.replying_comment is not None:
+                await self.action_cancel_reply()
 
     def _fetch_comments(self):
         if not self.post.comments:

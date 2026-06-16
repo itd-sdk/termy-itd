@@ -49,7 +49,7 @@ class CommentWidget(Widget):
                 yield ClickableStatic('', classes='report')
                 yield ClickableStatic('󰆴', classes='delete')
 
-        yield Static(self.comment.content)
+        yield Static(f'{f"@{self.comment.reply_to.username} " if self.comment.reply_to else ""}{self.comment.content}')
 
         if self.comment.attachments:
             yield ImageCarousel(self.comment.attachments)
