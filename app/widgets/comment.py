@@ -5,6 +5,7 @@ from pyperclip import copy
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
+from textual.message import Message
 from textual.widget import Widget
 from textual.widgets import Static
 
@@ -12,6 +13,11 @@ from app.widgets.shared import CarouselDialog, ClickableStatic, ImageCarousel
 
 
 class CommentWidget(Widget):
+    class Replied(Message):
+        def __init__(self, comment: Comment):
+            super().__init__()
+            self.comment = comment
+
     can_focus = True
     BINDINGS = [
         Binding('a', 'open_attachments', 'Открыть вложения'),
@@ -46,13 +52,18 @@ class CommentWidget(Widget):
         yield Static(self.comment.content)
 
         if self.comment.attachments:
-            yield ImageCarousel(self.comment.attachments)  # pyright: ignore[reportArgumentType]
+            yield ImageCarousel(self.comment.attachments)
 
         with Horizontal(classes='comment-bottom'):
             yield ClickableStatic('Ответить', classes='reply-button')
             yield ClickableStatic(
                 f'{"" if self.comment.is_liked else ""} {self.comment.likes_count}', classes=f'likes{" active" if self.comment.is_liked else ""}'
             )
+
+        if self.comment.replies.load_all():
+            with Vertical(classes='replies'):
+                for reply in self.comment.replies:
+                    yield CommentWidget(reply)
 
     def action_like(self):
         button = self.query_one('.likes', ClickableStatic)
@@ -67,12 +78,15 @@ class CommentWidget(Widget):
             button.update(f' {self.comment.likes_count}')
 
     def on_clickable_static_clicked(self, event: ClickableStatic.Clicked):
+        event.stop()
         if 'likes' in event.classes:
             self.action_like()
+        if 'reply' in event.classes:
+            self.post_message(self.Replied(self.comment))
 
     def action_open_attachments(self):
         if self.comment.attachments:
-            self.app.push_screen(CarouselDialog(self.comment.attachments))  # pyright: ignore[reportArgumentType]
+            self.app.push_screen(CarouselDialog(self.comment.attachments))
         else:
             self.notify('Нет вложений', severity='warning')
 

@@ -23,7 +23,7 @@ class CarouselDialog(ModalScreen):
     idx: reactive[int] = reactive(0, recompose=True)
     is_sixel: reactive[bool] = reactive(True, recompose=True)
 
-    def __init__(self, attachments: list[PostAttach | CommentAttach], idx: int = 0) -> None:
+    def __init__(self, attachments: list[PostAttach] | list[CommentAttach], idx: int = 0) -> None:
         super().__init__()
         self.attachments = attachments
         self.idx = idx

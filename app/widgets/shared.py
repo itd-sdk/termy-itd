@@ -46,32 +46,20 @@ class Image(HalfcellImage, Renderable=HalfcellRenderable):
             super().__init__()
             self.idx = idx
 
-    class Failed(Message):
-        def __init__(self, idx: int) -> None:
-            super().__init__()
-            self.idx = idx
-
     def __init__(self, image: PostAttach, idx: int) -> None:
-        super().__init__(classes='image')
+        super().__init__(classes='image', on_error=lambda e: Static(f'Ошибка: {e}', classes='error'))
         self.attachment = image
         self.loading = True
         self.idx = idx
 
     @work(thread=True)
     def load_image(self):
-        image = get_and_maybe_write(self.attachment)
-        try:
-            PILImage.open(image).verify()
-        except UnidentifiedImageError, OSError:
-            self.app.call_from_thread(self.post_message, self.Failed(self.idx))
-        else:
-            self.image = image
-        finally:
+        self.image = get_and_maybe_write(self.attachment)
 
-            def _remove_loading():
-                self.loading = False
+        def _remove_loading():
+            self.loading = False
 
-            self.call_next(_remove_loading)
+        self.call_next(_remove_loading)
 
     def on_mount(self):
         self.load_image()
@@ -83,7 +71,7 @@ class Image(HalfcellImage, Renderable=HalfcellRenderable):
 class ImageCarousel(HorizontalScroll):
     failed_ids: reactive[list[int]] = reactive([], recompose=True)
 
-    def __init__(self, attachments: list[PostAttach | CommentAttach]) -> None:
+    def __init__(self, attachments: list[PostAttach] | list[CommentAttach]) -> None:
         super().__init__(classes='images')
         self.attachments = attachments
 
@@ -103,7 +91,3 @@ class ImageCarousel(HorizontalScroll):
     def on_image_clicked(self, event: Image.Clicked):
         event.stop()
         self.app.push_screen(CarouselDialog(self.attachments, event.idx))
-
-    def on_image_failed(self, event: Image.Failed):
-        event.stop()
-        self.failed_ids = [*self.failed_ids, event.idx]

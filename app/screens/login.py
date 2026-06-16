@@ -1,13 +1,12 @@
-from textual.screen import Screen
-from textual.widgets import Input, Button, Static
-from textual.containers import Vertical, Center
-from textual_englyph import EnGlyphText
-
 from itd import ITDClient
 from itd.exceptions import SessionExpiredError, SessionNotFoundError, SessionRevokedError
+from textual.containers import Center, Vertical
+from textual.screen import Screen
+from textual.widgets import Button, Input, Static
+from textual_englyph import EnGlyphText
 
 from app.screens.home import HomeScreen
-from app.storage import storage, flush
+from app.storage import flush, storage
 
 
 class LoginScreen(Screen):
@@ -17,6 +16,7 @@ class LoginScreen(Screen):
         background: $panel; # idk why but it not works in a css file
     }
     """
+
     def compose(self):
         with Vertical(id='container'):
             with Center():
@@ -44,6 +44,5 @@ class LoginScreen(Screen):
         else:
             storage['refresh'] = input.value
             flush()
-            self.app.client = client # pyright: ignore[reportAttributeAccessIssue]
+            self.app.client = client  # ty: ignore[unresolved-attribute]
             self.app.switch_screen(HomeScreen())
-

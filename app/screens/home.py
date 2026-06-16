@@ -26,7 +26,7 @@ class PostsWidget(VerticalScroll):
     def _fetch_posts(self):
         return self.posts.load(20)
 
-    @work(exclusive=True)
+    @work
     async def load_posts(self):
         if self.is_load_locked:
             return
@@ -88,7 +88,7 @@ class PostsWidget(VerticalScroll):
 
     def watch_scroll_y(self, old_value: float, new_value: float) -> None:
         super().watch_scroll_y(old_value, new_value)
-        if self.posts.has_more and self.is_load_locked and round(new_value) == self.max_scroll_y:
+        if self.posts.has_more and not self.is_load_locked and round(new_value) == self.max_scroll_y:
             self.load_posts()
 
 

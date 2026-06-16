@@ -96,7 +96,11 @@ OriginalPostWidget .avatar {
 
 
 #heading {
-    padding: 1 1 0 1;
+    padding-left: 1;
+    padding-right: 1;
+    padding-bottom: 1;
+    margin-left: 1;
+    margin-right: 1;
     background: $surface;
     border-bottom: hkey $foreground-muted;
 }
@@ -109,4 +113,12 @@ PostScreen > Horizontal {
 }
 #add-comment {
     width: 1fr;
+}
+
+#reply-header {
+    background: $panel;
+    padding: 0 1 1 1;
+    border-left: $primary round;
+    border-right: $primary round;
+    border-top: $primary round;
 }
