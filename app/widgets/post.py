@@ -11,17 +11,14 @@ from textual.widget import Widget
 from textual.widgets import Static
 
 from app.dialogs import CarouselDialog, ConfirmDialog, RepostDialog
-from app.widgets.shared import ClickableStatic, ImageCarousel
+from app.widgets.shared import Avatar, ClickableStatic, DisplayName, ImageCarousel
 
 
 def _compose_post(post: Post, original_post: bool = True) -> ComposeResult:
     with Horizontal(classes='post-top'):
-        yield Static(post.author.avatar, classes='avatar')
+        yield Avatar(post.author.avatar)
         with Vertical():
-            with Horizontal(classes='display-name'):
-                yield Static(post.author.display_name, classes='subscribed' if post.author.is_subscribed else '', markup=False)
-                if post.author.verified:
-                    yield Static('', classes='verified')
+            yield DisplayName(post.author)
             yield Static(f'@{post.author.username}', classes='username')
         yield Static(post.created_at.strftime('%d.%m.%y %H:%M:%S'), classes='date')
         with Horizontal(classes='actions'):

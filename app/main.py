@@ -1,8 +1,7 @@
 from itd import ITDClient, ITDConfig, Notifications
 from itd.exceptions import SessionExpiredError, SessionNotFoundError, SessionRevokedError
 from itd.notification import Notification
-from rich.console import RenderableType
-from textual.app import App, ReturnType
+from textual.app import App
 
 from app.screens import HomeScreen, LoginScreen, NotificationsScreen
 from app.storage import storage
@@ -44,7 +43,7 @@ class TermyITDApp(App):
                 self.client.refresh_auth()
                 self.notifications = Notifications()
                 self.notifications.on_notification = self._on_notification  # ty: ignore[invalid-assignment]
-                self.notifications.stream_bg()
+                self.notifications.stream_bg(True)
             except SessionExpiredError:
                 self.notify('Сессия истекла', severity='error')
             except SessionNotFoundError:
@@ -56,10 +55,6 @@ class TermyITDApp(App):
                 # self.update_notifications_count(self.notifications.unread_count)
                 return
         self.push_screen(LoginScreen())
-
-    def exit(self, result: ReturnType | None = None, return_code: int = 0, message: RenderableType | None = None):
-        self.notifications.stop_stream()
-        super().exit(result, return_code, message)
 
 
 app = TermyITDApp()

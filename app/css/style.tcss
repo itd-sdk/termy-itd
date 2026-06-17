@@ -54,39 +54,36 @@ ModalScreen {
     margin-top: 2;
 }
 
-
-.verified {
-    color: #0080ff;
-    width: 1;
-    height: 1;
-    margin-left: 1;
-}
-.subscribed {
-    color: #4fc3f7;
-    # color: Gradient(#4fc3f7, #e0f7fa);
-}
-
 Static {
     link-style: bold;
 }
 
-.avatar {
-    background: $panel;
-    padding: 1 2;
+Avatar {
+    padding: 0 1;
     margin-right: 2;
+    text-align: center;
     height: 3;
     width: 6;
+    border: round $foreground;
+    background: transparent;
+}
+Avatar.red {
+    border: round $error;
+}
+Avatar.green {
+    border: round $success;
+}
+Avatar.blue {
+    border: round $primary;
+}
+Avatar.purple {
+    border: round $accent;
 }
 .username {
     color: $foreground-muted;
 }
-.display-name {
+DisplayName {
     height: 1;
-}
-.display-name > Static:first-child {
-    text-style: bold underline;
-}
-.display-name > * {
     width: auto;
 }
 

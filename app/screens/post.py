@@ -51,7 +51,6 @@ class PostScreen(BaseScreen):
     async def on_comment_widget_replied(self, event: CommentWidget.Replied):
         event.stop()
         if self.replying_comment is not None:
-            self.log('clr')
             await self.action_cancel_reply()
 
         self.replying_comment = event.comment
@@ -108,7 +107,17 @@ class PostScreen(BaseScreen):
         except BannedWordError:
             self.notify('В комментарии содержутся запрещенные слова', severity='error')
         else:
-            await scroll.mount(comment, before=1)
+            if comment.comment.reply_to is None:
+                await scroll.mount(comment, before=1)
+
+            elif self.replying_comment:
+                for child in scroll.query(CommentWidget):
+                    if child.comment.id == self.replying_comment.id:
+                        if child.comment.reply_to is None:
+                            child.query_one('.replies').mount(comment, before=1)
+                        else:
+                            child._mount_reply(comment)
+
             scroll.scroll_to_widget(comment)
             comment.focus()
             input.clear()

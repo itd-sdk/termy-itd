@@ -23,24 +23,7 @@ NotificationWidget.green {
 NotificationWidget.blue {
     background: $primary-darken-2;
 }*/
-NotificationWidget .avatar {
-    padding: 0;
-    text-align: center;
-    background: transparent;
-    height: 3;
-}
-NotificationWidget.red .avatar {
-    border: round $error;
-}
-NotificationWidget.green .avatar {
-    border: round $success;
-}
-NotificationWidget.blue .avatar {
-    border: round $primary;
-}
-NotificationWidget.purple .avatar {
-    border: round $accent;
-}
+
 
 .notification-text {
     color: $foreground-muted;

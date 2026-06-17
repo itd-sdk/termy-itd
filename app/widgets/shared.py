@@ -1,7 +1,10 @@
 from typing import Iterable
 
+from itd import User
 from itd.enums import AttachType
 from itd.file import CommentAttach, PostAttach
+from pygments.console import esc
+from rich.markup import escape
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import HorizontalScroll
@@ -30,8 +33,8 @@ class ClickableStatic(Static):
             else:
                 self.classes = classes
 
-    def __init__(self, content: str = '', *, id: str | None = None, classes: str | None = None) -> None:
-        super().__init__(content, id=id, classes=classes)
+    def __init__(self, content: str = '', *, id: str | None = None, classes: str | None = None, markup: bool = True) -> None:
+        super().__init__(content, id=id, classes=classes, markup=markup)
 
     def on_click(self):
         if self.classes:
@@ -89,3 +92,26 @@ class ImageCarousel(HorizontalScroll):
     def on_image_clicked(self, event: Image.Clicked):
         event.stop()
         self.app.push_screen(CarouselDialog(self.attachments, event.idx))
+
+
+class Avatar(ClickableStatic):
+    def __init__(self, avatar: str, *, classes: str | None = None):
+        super().__init__(avatar, classes=classes)
+        self.add_class('avatar')
+
+    def on_click(self):
+        self.notify('todo')
+
+
+class DisplayName(ClickableStatic):
+    def __init__(self, user: User, *, classes: str | None = None):
+        content = '[bold underline]' + escape(user.display_name) + '[/bold underline]'
+        if user.is_subscribed:
+            content = '[#4fc3f7]' + content + '[/#4fc3f7]'
+        if user.verified:
+            content += ' [#0080ff][/#0080ff]'
+
+        super().__init__(content, classes=classes)
+
+    def on_click(self):
+        self.notify('todo')

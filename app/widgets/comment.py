@@ -9,7 +9,7 @@ from textual.message import Message
 from textual.widget import Widget
 from textual.widgets import Static
 
-from app.widgets.shared import CarouselDialog, ClickableStatic, ImageCarousel
+from app.widgets.shared import Avatar, CarouselDialog, ClickableStatic, DisplayName, ImageCarousel
 
 
 class CommentWidget(Widget):
@@ -29,18 +29,16 @@ class CommentWidget(Widget):
         Binding('alt+r', 'report', 'Пожаловаться')
     ]
 
-    def __init__(self, comment: Comment) -> None:
+    def __init__(self, comment: Comment, _base_comment: CommentWidget | None = None) -> None:
         super().__init__()
         self.comment = comment
+        self._base_comment = _base_comment
 
     def compose(self) -> ComposeResult:
         with Horizontal(classes='comment-top'):
-            yield Static(self.comment.author.avatar, classes='avatar')
+            yield Avatar(self.comment.author.avatar)
             with Vertical():
-                with Horizontal(classes='display-name'):
-                    yield Static(self.comment.author.display_name, classes='subscribed' if self.comment.author.is_subscribed else '', markup=False)
-                    if self.comment.author.verified:
-                        yield Static('', classes='verified')
+                yield DisplayName(self.comment.author)
                 yield Static(f'@{self.comment.author.username}', classes='username')
             yield Static(self.comment.created_at.strftime('%d.%m.%y %H:%M:%S'), classes='date')
             with Horizontal(classes='actions'):
@@ -49,7 +47,7 @@ class CommentWidget(Widget):
                 yield ClickableStatic('', classes='report')
                 yield ClickableStatic('󰆴', classes='delete')
 
-        yield Static(f'{f"@{self.comment.reply_to.username} " if self.comment.reply_to else ""}{self.comment.content}')
+        yield Static(f'{f"[dim underline]@{self.comment.reply_to.username}[/] " if self.comment.reply_to is not None else ""}{self.comment.content}')
 
         if self.comment.attachments:
             yield ImageCarousel(self.comment.attachments)
@@ -63,7 +61,7 @@ class CommentWidget(Widget):
         if self.comment.replies.load_all():
             with Vertical(classes='replies'):
                 for reply in self.comment.replies:
-                    yield CommentWidget(reply)
+                    yield CommentWidget(reply, self)
 
     def action_like(self):
         button = self.query_one('.likes', ClickableStatic)
@@ -104,3 +102,7 @@ class CommentWidget(Widget):
     def action_open_url(self):
         open(self.comment.url)
         self.notify('Комментарий должен открыться в браузере')
+
+    def _mount_reply(self, reply: CommentWidget):
+        assert self._base_comment
+        self._base_comment.mount(reply, after=self)

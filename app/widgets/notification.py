@@ -7,30 +7,23 @@ from textual.events import Click
 from textual.widget import Widget
 from textual.widgets import Static
 
-from app.widgets.shared import ClickableStatic
+from app.widgets.shared import Avatar, ClickableStatic, DisplayName
 
 
 class NotificationWidget(Widget, can_focus=True):
-    BINDINGS = [
-        Binding('ctrl+enter', 'open_actor', 'Открыть профиль актора'),
-        Binding('enter', 'open_target', 'Открыть объект'),
-        Binding('r', 'read', 'Прочитать')
-    ]
+    BINDINGS = [Binding('a', 'open_actor', 'Открыть профиль актора'), Binding('enter', 'open_target', 'Открыть объект'), Binding('r', 'read', 'Прочитать')]
 
     def __init__(self, notification: Notification):
         super().__init__()
         self.notification = notification
-        self.add_class(notification.get_color())
         if not notification.is_read:
             self.add_class('unread')
 
     def compose(self):
-        yield Static(self.notification.actor.avatar, classes='avatar')
+        yield Avatar(self.notification.actor.avatar, classes=self.notification.get_color())
         with Vertical():
             with Horizontal(classes='display-name'):
-                yield Static(self.notification.actor.display_name, classes='subscribed' if self.notification.actor.is_subscribed else '', markup=False)
-                if self.notification.actor.verified:
-                    yield Static('', classes='verified')
+                yield DisplayName(self.notification.actor)
                 yield Static(self.notification.get_text().replace(self.notification.actor.display_name, '').strip(), classes='notification-text')
                 with Horizontal(classes='notification-actions'):
                     yield ClickableStatic('󰏋', classes='open-actor')
@@ -80,5 +73,5 @@ class NotificationWidget(Widget, can_focus=True):
         self.query_one('.read').remove()
 
     def on_click(self, event: Click):
-        if event.chain > 2:
+        if event.chain > 1:
             self.action_open_target()
