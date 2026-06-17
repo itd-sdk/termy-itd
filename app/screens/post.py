@@ -17,9 +17,9 @@ from app.widgets.shared import ClickableStatic
 
 class PostScreen(BaseScreen):
     BINDINGS = [
-        Binding('f5', 'refresh', 'Обновить страницу'),
+        Binding('f5', 'refresh', 'Обновить'),
         Binding('escape', 'app.pop_screen', 'Назад'),
-        Binding('c', 'focus_input', 'Сфокусироваться на вводе комментария')
+        Binding('c', 'focus_input', 'Сфокусироваться на поле ввода')
     ]
     # CSS_PATH = '../css/post.tcss'
 

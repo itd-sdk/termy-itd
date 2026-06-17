@@ -20,12 +20,12 @@ class CommentWidget(Widget):
 
     can_focus = True
     BINDINGS = [
-        Binding('a', 'open_attachments', 'Открыть вложения'),
+        Binding('a', 'open_attachments', 'Вложения'),
         Binding('l', 'like', 'Лайк'),
         Binding('ctrl+c', 'copy', 'Скопировать текст'),
-        Binding('u', 'copy_url', 'Скопировать ссылку на комментарий'),
-        Binding('U', 'open_url', 'Открыть комментарий в браузере'),
-        Binding('delete', 'delete', 'Удалить комментарий'),
+        Binding('u', 'copy_url', 'Скопировать ссылку'),
+        Binding('U', 'open_url', 'Открыть в браузере'),
+        Binding('delete', 'delete', 'Удалить'),
         Binding('alt+r', 'report', 'Пожаловаться')
     ]
 

@@ -1,3 +1,4 @@
+from itd.notification import Notification
 from textual import work
 from textual.binding import Binding
 from textual.containers import Horizontal, VerticalScroll
@@ -48,6 +49,10 @@ class NotificationsScreen(BaseScreen):
             return
         self.app.notifications.read_all()  # ty: ignore[unresolved-attribute]
         for notification in self.query(NotificationWidget):
-            if notification.has_class('read'):
+            if notification.has_class('unread'):
                 notification._read()
         self.query_one('#read-all', Button).disabled = True
+        self.app.update_notifications_count()  # ty: ignore[unresolved-attribute]
+
+    def _add_notification(self, notification: Notification):
+        self.app.call_from_thread(self.query_one(VerticalScroll).mount, NotificationWidget(notification), before=0)

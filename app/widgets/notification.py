@@ -1,6 +1,9 @@
+from itd import Post
+from itd.enums import NotificationTargetType
 from itd.notification import Notification
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
+from textual.events import Click
 from textual.widget import Widget
 from textual.widgets import Static
 
@@ -9,8 +12,8 @@ from app.widgets.shared import ClickableStatic
 
 class NotificationWidget(Widget, can_focus=True):
     BINDINGS = [
-        Binding('enter', 'open_target', 'Открыть объект'),
         Binding('ctrl+enter', 'open_actor', 'Открыть профиль актора'),
+        Binding('enter', 'open_target', 'Открыть объект'),
         Binding('r', 'read', 'Прочитать')
     ]
 
@@ -52,7 +55,12 @@ class NotificationWidget(Widget, can_focus=True):
 
     def action_open_target(self):
         self.notify(str(self.notification.target_id))
-        self.notify('todo', severity='error')
+        if self.notification.target_id and self.notification.target_type == NotificationTargetType.POST:
+            from app.screens.post import PostScreen  # circular import
+
+            self.app.push_screen(PostScreen(Post(self.notification.target_id)))
+        else:
+            self.notify(f'not implemented for {self.notification.target_type}', severity='error')
 
     def action_open_actor(self):
         self.notify(str(self.notification.actor.username))
@@ -60,11 +68,17 @@ class NotificationWidget(Widget, can_focus=True):
 
     def action_read(self):
         if self.notification.is_read:
-            self.notify('Уведомление уже прочитано', severity='error')
+            self.notify('Уведомление уже прочитано', severity='warning')
             return
         self.notification.read()
         self._read()
+        self.app.update_notifications_count()  # ty: ignore[unresolved-attribute]
 
     def _read(self):
+        self.notification.is_read = True
         self.remove_class('unread')
         self.query_one('.read').remove()
+
+    def on_click(self, event: Click):
+        if event.chain > 2:
+            self.action_open_target()

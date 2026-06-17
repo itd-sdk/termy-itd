@@ -53,17 +53,17 @@ def _compose_post(post: Post, original_post: bool = True) -> ComposeResult:
 class PostWidget(Widget):
     can_focus = True
     BINDINGS = [
-        Binding('a', 'open_attachments', 'Открыть вложения'),
+        Binding('a', 'open_attachments', 'Вложения'),
         Binding('l', 'like', 'Лайк'),
         Binding('r', 'repost', 'Репост'),
         Binding('ctrl+c', 'copy', 'Скопировать текст'),
-        Binding('u', 'copy_url', 'Скопировать ссылку на пост'),
-        Binding('U', 'open_url', 'Открыть пост в браузере'),
-        Binding('p', 'pin', 'Закрепить пост'),
-        Binding('delete', 'delete', 'Удалить пост'),
+        Binding('u', 'copy_url', 'Скопировать ссылку'),
+        Binding('U', 'open_url', 'Открыть в браузере'),
+        Binding('enter', 'open', 'Открыть'),
+        Binding('p', 'pin', 'Закрепить'),
+        Binding('delete', 'delete', 'Удалить'),
         Binding('alt+r', 'report', 'Пожаловаться'),
-        Binding('enter', 'open', 'Открыть пост'),
-        Binding('f', 'focus_original_post', 'Сфокусироваться на оригинальном посте')
+        Binding('f', 'focus_original_post', 'Сфокусироваться на ориг. посте')
     ]
 
     def __init__(self, post: Post):
