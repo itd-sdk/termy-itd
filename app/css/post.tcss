@@ -84,10 +84,6 @@ OriginalPostWidget:focus {
     border: round $primary;
 }
 
-OriginalPostWidget .avatar {
-    background: $surface;
-}
-
 .attach-error {
     width: auto;
     color: red;

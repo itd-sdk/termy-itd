@@ -1,5 +1,6 @@
 from itd.notification import Notification
 from textual import work
+from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, VerticalScroll
 from textual.widgets import Button, LoadingIndicator, Static
@@ -9,15 +10,11 @@ from app.widgets import NotificationWidget
 
 
 class NotificationsScreen(BaseScreen):
+    screen_name = 'notifications'
     BINDINGS = [Binding('R', 'read_all', 'Прочитать все уведы')]
 
-    def __init__(self):
-        super().__init__()
-        self.current_tab: str = 'notifications'
-
-    def compose(self):
+    def compose(self) -> ComposeResult:
         yield from super().compose()
-
         with Horizontal():
             yield Static('Уведомления', classes='h1')
             yield Button('Прочитать все', variant='primary', id='read-all', flat=True, disabled=self.app.notifications.unread_count == 0)  # ty: ignore[unresolved-attribute]

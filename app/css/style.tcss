@@ -2,7 +2,7 @@
     dock: left;
     background: $panel;
     padding: 1;
-    width: 15%;
+    width: 15vw;
 }
 
 #logo * {
@@ -65,7 +65,6 @@ Avatar {
     height: 3;
     width: 6;
     border: round $foreground;
-    background: transparent;
 }
 Avatar.red {
     border: round $error;
@@ -90,4 +89,9 @@ DisplayName {
 .h1 {
     text-style: bold underline;
     margin: 1;
+}
+
+
+EnGlyph {
+    background: $panel;
 }

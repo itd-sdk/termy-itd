@@ -1,6 +1,5 @@
-from textual import work
-from textual.app import ComposeResult
 from textual.containers import Vertical
+from textual.message import Message
 from textual.screen import Screen
 from textual.widgets import Footer, Static
 from textual_englyph import EnGlyphText
@@ -10,17 +9,14 @@ from app.widgets.shared import ClickableStatic
 
 
 class BaseScreen(Screen):
-    DEFAULT_CSS = """
-    EnGlyph {
-        background: $panel;
-    }
-    """
+    screen_name: str = 'none'
 
-    def __init__(self):
-        super().__init__()
-        self.current_tab: str | None = None
+    class Installed(Message):
+        def __init__(self, screen: BaseScreen):
+            super().__init__()
+            self.screen = screen
 
-    def compose(self) -> ComposeResult:
+    def compose(self):
         with Vertical(id='sidebar'):
             with Vertical(id='logo'):
                 yield EnGlyphText('termy', font_name='casio-fx-9860gii.ttf', font_size=6, basis=(2, 3))
@@ -28,31 +24,26 @@ class BaseScreen(Screen):
 
             for title, name in (
                 ('󱀈  Главная', 'home'),
-                ('  Уведомления', 'notifications'),
+                (
+                    '  Уведомления' if self.app.notifications.unread_count == 0 else f' Уведомления [white on red]{self.app.notifications.unread_count}[/]',  # ty: ignore
+                    'notifications'
+                ),
                 ('  Поиск', 'search'),
                 ('󱠽  Ивент', 'event'),
                 ('  Профиль', 'profile')
             ):
-                yield ClickableStatic(title, classes=f'{"active-tab" if self.current_tab == name else ""} tab {name}-tab')
+                yield ClickableStatic(title, classes=f'{"active-tab" if self.screen_name == name else ""} tab {name}-tab')
             yield Static('termy-ITD by @fdg', id='about')
         yield Footer()
 
     def on_clickable_static_clicked(self, event: ClickableStatic.Clicked):
         event.stop()
-        for _ in range(len(self.app.get_screen_stack()) - 1):
-            self.app.pop_screen()
-        self.log(event.classes)
         if 'home' in event.classes:
-            self.app.push_screen('home')
+            self.app.switch_mode('home')
         elif 'notifications' in event.classes:
-            self.app.push_screen('notifications')
+            self.app.switch_mode('notifications')
         else:
-            self.app.push_screen('home')
             self.app.push_screen(ConfirmDialog('Ошибка', 'Не удалось найти экран'))
 
-    @work
-    async def set_notifications(self):
-        self.app.update_notifications_count(self.app.notifications.unread_count)  # ty: ignore[unresolved-attribute]
-
     def on_mount(self):
-        self.call_after_refresh(self.set_notifications)
+        self.post_message(self.Installed(self))
