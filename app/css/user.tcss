@@ -1,0 +1,45 @@
+.banner {
+    width: 1fr;
+    height: 15;
+    background: white;
+}
+
+.user-info {
+  background: $surface;
+  margin: 0 2 2 3;
+  padding: 2;
+  height: auto;
+}
+
+.user-info Horizontal {
+    height: auto;
+}
+.user-info Vertical {
+    height: auto;
+}
+
+.user-info Avatar {
+    height: 5;
+    width: 10;
+}
+
+.bio {
+    color: $text-secondary;
+}
+
+.online {
+    color: $text-success;
+}
+.last-seen {
+    color: $foreground-muted;
+    margin-top: 1;
+}
+
+Counter {
+    width: auto;
+    margin-right: 3;
+}
+
+.username {
+  margin-left: 1;
+}

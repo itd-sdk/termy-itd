@@ -1,14 +1,16 @@
 from webbrowser import open
 
-from itd import Post
+from itd import Post, Posts
+from itd.post import _BasePosts
 from pyperclip import copy
+from textual import work
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, Vertical
+from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.events import Click
 from textual.message import Message
 from textual.widget import Widget
-from textual.widgets import Static
+from textual.widgets import LoadingIndicator, Static
 
 from app.dialogs import CarouselDialog, ConfirmDialog, RepostDialog
 from app.widgets.shared import Avatar, ClickableStatic, DisplayName, ImageCarousel
@@ -16,7 +18,7 @@ from app.widgets.shared import Avatar, ClickableStatic, DisplayName, ImageCarous
 
 def _compose_post(post: Post, original_post: bool = True) -> ComposeResult:
     with Horizontal(classes='post-top'):
-        yield Avatar(post.author.avatar)
+        yield Avatar(post.author)
         with Vertical():
             yield DisplayName(post.author)
             yield Static(f'@{post.author.username}', classes='username')
@@ -205,3 +207,87 @@ class OriginalPostWidget(PostWidget, inherit_bindings=False):
 
     def compose(self) -> ComposeResult:
         yield from _compose_post(self.post, original_post=False)
+
+
+class PostsWidget(Vertical, can_focus=True):
+    BINDINGS = [Binding('j', 'next_post', 'Следующий пост'), Binding('k', 'prev_post', 'Предыдущий пост'), Binding('f5', 'refresh', 'Обновить страницу')]
+
+    def __init__(self, posts: _BasePosts) -> None:
+        super().__init__(classes='posts', id=f'{posts.tab.value}-posts' if isinstance(posts, Posts) else None)
+        self.posts = posts
+        self.tab = posts.tab.value if isinstance(posts, Posts) else None
+        self.focused_post: PostWidget | None = None
+        self.is_load_locked: bool = False
+
+    @work
+    async def load_posts(self):
+        if self.is_load_locked:
+            return
+        self.is_load_locked = True
+        if len(self.children) > 20:
+            for child in self.children[:20]:
+                await child.remove()
+
+        loading = LoadingIndicator()
+        await self.mount(loading)
+        try:
+            for post in self.posts.load(20):
+                await self.mount(PostWidget(post), before=loading)
+        finally:
+            await loading.remove()
+
+        self.is_load_locked = False
+
+    def action_next_post(self):
+        posts = [post for post in self.query(PostWidget) if not isinstance(post, OriginalPostWidget)]
+        if not posts:
+            self.notify('Нет постов', severity='warning')
+            return
+
+        if not self.focused_post:
+            posts[0].focus()
+            self.focused_post = posts[0]
+        else:
+            post = posts[min(posts.index(self.focused_post) + 1, len(posts) - 1)]
+            post.focus()
+            self.focused_post = post
+
+    def action_prev_post(self):
+        posts = [post for post in self.query(PostWidget) if not isinstance(post, OriginalPostWidget)]
+        if not posts:
+            self.notify('Нет постов', severity='warning')
+            return
+
+        if not self.focused_post:
+            posts[-1].focus()
+            self.focused_post = posts[-1]
+        else:
+            post = posts[max(posts.index(self.focused_post) - 1, 0)]
+            post.focus()
+            self.focused_post = post
+
+    def action_refresh(self):
+        self.remove_children()
+
+        self.focused_post = None
+        self.posts.clear()
+        self.posts.cursor = None
+        self.posts.has_more = True
+        self.load_posts()
+
+        # analog to self.scroll_home, original not updates scrollbar idk why
+        self.scroll_y = 0
+        self.scroll_target_y = 0
+        # if self._vertical_scrollbar:
+        #     self._vertical_scrollbar.position = 0
+
+
+class PostsScroll(VerticalScroll):
+    def watch_scroll_y(self, old_value: float, new_value: float) -> None:
+        super().watch_scroll_y(old_value, new_value)
+        if round(new_value) >= self.max_scroll_y - 10:
+            posts = self.query_one(PostsWidget)
+            if posts.posts.has_more and not posts.is_load_locked:
+                posts.load_posts()
+            elif not posts.posts.has_more:
+                self.notify('Больше нет постов (нажми f5 чтобы обновить ленту)', severity='warning')

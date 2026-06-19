@@ -36,7 +36,7 @@ class CommentWidget(Widget):
 
     def compose(self) -> ComposeResult:
         with Horizontal(classes='comment-top'):
-            yield Avatar(self.comment.author.avatar)
+            yield Avatar(self.comment.author)
             with Vertical():
                 yield DisplayName(self.comment.author)
                 yield Static(f'@{self.comment.author.username}', classes='username')

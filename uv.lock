@@ -72,8 +72,8 @@ wheels = [
 
 [[package]]
 name = "itd-sdk"
-version = "2.5.1"
-source = { git = "https://github.com/itd-sdk/itd-sdk#a6347b69ae5ae670e9c73fe1e3cdcaceb9973acb" }
+version = "2.5.2"
+source = { git = "https://github.com/itd-sdk/itd-sdk#bbd4bb6b300979138a6b73b7ba5856eb19b23010" }
 dependencies = [
     { name = "lxml" },
     { name = "pydantic" },

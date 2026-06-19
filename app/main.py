@@ -5,17 +5,17 @@ from itd.notification import Notification
 from textual import work
 from textual.app import App
 
-from app.screens import HomeScreen, LoginScreen, NotificationsScreen
+from app.screens import HomeScreen, LoginScreen, NotificationsScreen, UserScreen
 from app.screens.base import BaseScreen
 from app.storage import storage
 from app.widgets.shared import ClickableStatic
 
-setup_logging('debug')
+setup_logging('debug', colorful=False)
 
 
 class TermyITDApp(App):
     CSS_PATH = ['css/style.tcss', 'css/post.tcss', 'css/comment.tcss', 'css/notification.tcss']  # https://github.com/Textualize/textual/discussions/4509
-    MODES = {'home': HomeScreen, 'notifications': NotificationsScreen}
+    MODES = {'home': HomeScreen, 'notifications': NotificationsScreen, 'profile': UserScreen}
     client: ITDClient
 
     def __init__(self, ansi_color: bool = False):
@@ -51,7 +51,16 @@ class TermyITDApp(App):
 
         self.client = ITDClient(
             storage['refresh'],
-            config=ITDConfig('client', post_update_stats=False, post_view_increment=True, auto_load=False, load_on_iter=False, load_on_getitem=False)
+            config=ITDConfig(
+                'client',
+                anti_rate_limit=False,
+                anti_ip_ban=False,
+                auto_acquire=False,
+                post_update_stats=False,
+                post_view_increment=True,
+                load_on_iter=False,
+                load_on_getitem=False
+            )
         )
         try:
             self.client.refresh_auth()

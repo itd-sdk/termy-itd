@@ -1,9 +1,8 @@
 from typing import Iterable
 
 from itd import User
-from itd.enums import AttachType
+from itd.enums import AttachType, LoadStatus
 from itd.file import CommentAttach, PostAttach
-from pygments.console import esc
 from rich.markup import escape
 from textual import work
 from textual.app import ComposeResult
@@ -49,6 +48,7 @@ class Image(HalfcellImage, Renderable=HalfcellRenderable):
 
     def __init__(self, image: PostAttach, idx: int) -> None:
         super().__init__(classes='image', on_error=lambda e: Static(f'Ошибка: {e}', classes='error'))
+        self.log(image.url)
         self.attachment = image
         self.loading = True
         self.idx = idx
@@ -95,23 +95,49 @@ class ImageCarousel(HorizontalScroll):
 
 
 class Avatar(ClickableStatic):
-    def __init__(self, avatar: str, *, classes: str | None = None):
-        super().__init__(avatar, classes=classes)
+    def __init__(self, user: User, clickable: bool = True, *, classes: str | None = None):
+        super().__init__(user.avatar, classes=classes)
         self.add_class('avatar')
+        self.user = user
+        self.clickable = clickable
 
-    def on_click(self):
-        self.notify('todo')
+    @work(thread=True)
+    def load_user(self):
+        self.user.refresh()
+
+    async def on_click(self):
+        if not self.clickable:
+            return
+        from app.screens import UserScreen
+
+        if self.user.load_status != LoadStatus.FULL:
+            await self.load_user().wait()
+
+        await self.app.push_screen(UserScreen(self.user))
 
 
 class DisplayName(ClickableStatic):
-    def __init__(self, user: User, *, classes: str | None = None):
+    def __init__(self, user: User, *, clickable: bool = True, classes: str | None = None):
         content = '[bold underline]' + escape(user.display_name) + '[/bold underline]'
         if user.is_subscribed:
             content = '[#4fc3f7]' + content + '[/#4fc3f7]'
         if user.verified:
             content += ' [#0080ff][/#0080ff]'
+        self.user = user
+        self.clickable = clickable
 
         super().__init__(content, classes=classes)
 
-    def on_click(self):
-        self.notify('todo')
+    @work(thread=True)
+    def load_user(self):
+        self.user.refresh()
+
+    async def on_click(self):
+        if not self.clickable:
+            return
+        from app.screens import UserScreen
+
+        if self.user.load_status != LoadStatus.FULL:
+            await self.load_user().wait()
+
+        await self.app.push_screen(UserScreen(self.user))

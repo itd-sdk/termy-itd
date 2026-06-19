@@ -1,6 +1,7 @@
 from itd import Post
-from itd.enums import NotificationTargetType
+from itd.enums import LoadStatus, NotificationTargetType
 from itd.notification import Notification
+from textual import work
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.events import Click
@@ -20,7 +21,7 @@ class NotificationWidget(Widget, can_focus=True):
             self.add_class('unread')
 
     def compose(self):
-        yield Avatar(self.notification.actor.avatar, classes=self.notification.get_color())
+        yield Avatar(self.notification.actor, classes=self.notification.get_color())
         with Vertical():
             with Horizontal(classes='display-name'):
                 yield DisplayName(self.notification.actor)
@@ -37,17 +38,17 @@ class NotificationWidget(Widget, can_focus=True):
 
             yield Static(self.notification.created_at.strftime('%d.%m.%y %H:%M:%S'), classes='notification-date')
 
-    def on_clickable_static_clicked(self, event: ClickableStatic.Clicked):
+    async def on_clickable_static_clicked(self, event: ClickableStatic.Clicked):
         event.stop()
         if 'open-target' in event.classes:
             self.action_open_target()
         if 'open-actor' in event.classes:
-            self.action_open_actor()
+            await self.action_open_actor()
         if 'read' in event.classes:
             self.action_read()
 
     def action_open_target(self):
-        self.notify(str(self.notification.target_id))
+        # self.action_read()
         if self.notification.target_id and self.notification.target_type == NotificationTargetType.POST:
             from app.screens.post import PostScreen  # circular import
 
@@ -55,9 +56,17 @@ class NotificationWidget(Widget, can_focus=True):
         else:
             self.notify(f'not implemented for {self.notification.target_type}', severity='error')
 
-    def action_open_actor(self):
-        self.notify(str(self.notification.actor.username))
-        self.notify('todo', severity='error')
+    @work(thread=True)
+    def load_user(self):
+        self.notification.actor.refresh()
+
+    async def action_open_actor(self):
+        from app.screens import UserScreen
+
+        if self.notification.actor.load_status != LoadStatus.FULL:
+            await self.load_user().wait()
+
+        await self.app.push_screen(UserScreen(self.notification.actor))
 
     def action_read(self):
         if self.notification.is_read:

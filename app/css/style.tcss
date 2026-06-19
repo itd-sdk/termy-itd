@@ -14,7 +14,6 @@
 
 .tab {
     padding: 1;
-    border-bottom: solid #000;
 }
 .tab:hover {
     background: $surface;
@@ -22,6 +21,9 @@
 .active-tab {
     text-style: bold;
     background: $surface;
+}
+.tab-divider {
+    outline: hkey #000;
 }
 
 #about {
@@ -61,7 +63,8 @@ Static {
 Avatar {
     padding: 0 1;
     margin-right: 2;
-    text-align: center;
+    /*text-align: center;*/
+    content-align: center middle;
     height: 3;
     width: 6;
     border: round $foreground;

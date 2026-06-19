@@ -13,6 +13,10 @@ PostScreen > VerticalScroll > PostWidget:focus {
     border: none;
 }
 
+PostsWidget {
+    min-height: 3;
+    height: auto;
+}
 
 .post-top {
     height: 3;

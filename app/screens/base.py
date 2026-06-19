@@ -33,6 +33,7 @@ class BaseScreen(Screen):
                 ('  Профиль', 'profile')
             ):
                 yield ClickableStatic(title, classes=f'{"active-tab" if self.screen_name == name else ""} tab {name}-tab')
+                yield Static('', classes='tab-divider')
             yield Static('termy-ITD by @fdg', id='about')
         yield Footer()
 
@@ -42,6 +43,8 @@ class BaseScreen(Screen):
             self.app.switch_mode('home')
         elif 'notifications' in event.classes:
             self.app.switch_mode('notifications')
+        elif 'profile' in event.classes:
+            self.app.switch_mode('profile')
         else:
             self.app.push_screen(ConfirmDialog('Ошибка', 'Не удалось найти экран'))
 
