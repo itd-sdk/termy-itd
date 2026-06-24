@@ -4,39 +4,41 @@ from itd.logger import setup_logging
 from itd.notification import Notification
 from textual import work
 from textual.app import App
+from textual.logging import TextualHandler
 
-from app.screens import HomeScreen, LoginScreen, NotificationsScreen, UserScreen
+from app.screens import HomeScreen, LoginScreen, NotificationsScreen, SearchScreen, UserScreen
 from app.screens.base import BaseScreen
 from app.storage import storage
 from app.widgets.shared import ClickableStatic
 
-setup_logging('debug', colorful=False)
+setup_logging('debug', colorful=True).addHandler(TextualHandler())
 
 
 class TermyITDApp(App):
     CSS_PATH = ['css/style.tcss', 'css/post.tcss', 'css/comment.tcss', 'css/notification.tcss']  # https://github.com/Textualize/textual/discussions/4509
-    MODES = {'home': HomeScreen, 'notifications': NotificationsScreen, 'profile': UserScreen}
+    MODES = {'home': HomeScreen, 'notifications': NotificationsScreen, 'profile': UserScreen, 'search': SearchScreen}
     client: ITDClient
 
     def __init__(self, ansi_color: bool = False):
         super().__init__(ansi_color=ansi_color)
+        self.log('init')
         self.current_tab: str | None = None
         self.screens: set[BaseScreen] = set()
 
     def update_notifications_count(self, count: int | None = None):
         count = count or self.notifications.unread_count
+        self.log(f'update notifications count count={count}')
         if count == 0:
             title = '  Уведомления'
         else:
             title = f' Уведомления [white on red]{count}[/]'
 
-        self.log(self._installed_screens)
-        self.log(self.is_screen_installed('home'))
         for screen in self.screens:
             screen.query_one('.notifications-tab', ClickableStatic).update(title)
 
     def _on_notification(self, notification: Notification):
-        self.update_notifications_count(self.notifications.unread_count + 1)
+        self.update_notifications_count(self.notifications.unread_count)
+        self.log(f'new notification type={notification.type.value}')
         self.notify(
             notification.preview or notification.get_text(avatar=True),
             title=notification.get_text(avatar=True) if notification.preview else 'Новое уведомление',
@@ -50,17 +52,7 @@ class TermyITDApp(App):
             self.push_screen(LoginScreen())
 
         self.client = ITDClient(
-            storage['refresh'],
-            config=ITDConfig(
-                'client',
-                anti_rate_limit=False,
-                anti_ip_ban=False,
-                auto_acquire=False,
-                post_update_stats=False,
-                post_view_increment=True,
-                load_on_iter=False,
-                load_on_getitem=False
-            )
+            storage['refresh'], config=ITDConfig('client', post_update_stats=False, post_view_increment=True, load_on_iter=None, load_on_getattr=False)
         )
         try:
             self.client.refresh_auth()

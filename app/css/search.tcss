@@ -1,0 +1,30 @@
+.place {
+    color: $foreground-muted;
+}
+
+.count {
+    color: $primary;
+    text-style: bold;
+    text-align: right;
+    width: 1fr;
+}
+
+HashtagWidget, ClanWidget, UserWidget {
+    background: $surface;
+    padding: 1;
+    margin-bottom: 1;
+    height: 3;
+}
+
+HashtagWidget > Static, ClanWidget > Static {
+    width: auto;
+    margin-right: 1;
+}
+
+UserWidget {
+    height: 5;
+    content-align: center middle;
+}
+#users Button {
+    width: 1fr;
+}

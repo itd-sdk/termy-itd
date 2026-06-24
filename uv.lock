@@ -72,8 +72,8 @@ wheels = [
 
 [[package]]
 name = "itd-sdk"
-version = "2.5.2"
-source = { git = "https://github.com/itd-sdk/itd-sdk#bbd4bb6b300979138a6b73b7ba5856eb19b23010" }
+version = "2.6.0"
+source = { git = "https://github.com/itd-sdk/itd-sdk#87799183532c2a67bd2dd3a9588eba53372d5cc2" }
 dependencies = [
     { name = "lxml" },
     { name = "pydantic" },
@@ -457,7 +457,7 @@ wheels = [
 [[package]]
 name = "textual-image"
 version = "0.13.2"
-source = { git = "https://github.com/lnqs/textual-image#c409b3e6ad54d541938e6b3a79f60cffdd2cc601" }
+source = { git = "https://github.com/lnqs/textual-image#6442cf982172059fb9a5397211e6d946648a4d32" }
 dependencies = [
     { name = "pillow" },
     { name = "rich" },

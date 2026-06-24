@@ -16,11 +16,16 @@ class BaseScreen(Screen):
             super().__init__()
             self.screen = screen
 
+    def __init__(self, _log: bool = True):
+        super().__init__()
+        if _log:
+            self.log(f'open {self.screen_name} screen')
+
     def compose(self):
         with Vertical(id='sidebar'):
             with Vertical(id='logo'):
                 yield EnGlyphText('termy', font_name='casio-fx-9860gii.ttf', font_size=6, basis=(2, 3))
-                yield EnGlyphText('ИТД', font_name='casio-fx-9860gii.ttf', font_size=7, basis=(2, 3))
+                yield EnGlyphText('ИТД', font_name='casio-fx-9860gii.ttf', font_size=7, basis=(2, 3))  # шесть семь кстати
 
             for title, name in (
                 ('󱀈  Главная', 'home'),
@@ -34,7 +39,7 @@ class BaseScreen(Screen):
             ):
                 yield ClickableStatic(title, classes=f'{"active-tab" if self.screen_name == name else ""} tab {name}-tab')
                 yield Static('', classes='tab-divider')
-            yield Static('termy-ITD by @fdg', id='about')
+            yield Static('termy-itd by @fdg', id='about')
         yield Footer()
 
     def on_clickable_static_clicked(self, event: ClickableStatic.Clicked):
@@ -43,9 +48,12 @@ class BaseScreen(Screen):
             self.app.switch_mode('home')
         elif 'notifications' in event.classes:
             self.app.switch_mode('notifications')
+        elif 'search' in event.classes:
+            self.app.switch_mode('search')
         elif 'profile' in event.classes:
             self.app.switch_mode('profile')
         else:
+            self.log.error(f'unable to find screen classes={event.classes}')
             self.app.push_screen(ConfirmDialog('Ошибка', 'Не удалось найти экран'))
 
     def on_mount(self):

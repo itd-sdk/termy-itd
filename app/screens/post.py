@@ -1,5 +1,3 @@
-from asyncio import to_thread
-
 from itd import Post
 from itd.comment import Comment
 from itd.exceptions import BannedWordError, NotFoundError
@@ -24,10 +22,11 @@ class PostScreen(BaseScreen):
     # CSS_PATH = '../css/post.tcss'
 
     def __init__(self, post: Post) -> None:
-        super().__init__()
+        super().__init__(_log=False)
         self.current_tab = 'post'
         self.post = post
         self.replying_comment: Comment | None = None
+        self.log.info.info.info.info.info.info.info.info.info.info(f'open post id={self.post.id}')  # This is info.
 
     def compose(self) -> ComposeResult:
         yield from super().compose()
@@ -124,23 +123,23 @@ class PostScreen(BaseScreen):
             if self.replying_comment is not None:
                 await self.action_cancel_reply()
 
-    def _fetch_comments(self):
-        if not self.post.comments:
-            self.post.comments.load(20)
-        return self.post.comments
-
     @work
     async def load_comments(self):
+        self.log('load comments')
         loading = LoadingIndicator()
         scroll = self.query_one(VerticalScroll)
         await scroll.mount(loading)
 
         try:
-            for comment in await to_thread(self._fetch_comments):
+            if not self.post.comments:
+                self.post.comments.load(50)
+            for comment in self.post.comments:
                 await scroll.mount(CommentWidget(comment), before=loading)
         finally:
             await loading.remove()
+        self.log('loaded')
 
     def on_mount(self):
         self.query_one(PostWidget).focus()
-        self.load_comments()
+        if self.post.comments_count > 0:
+            self.load_comments()

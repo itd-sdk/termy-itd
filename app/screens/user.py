@@ -24,8 +24,9 @@ class UserScreen(BaseScreen):
     BINDINGS = [Binding('escape', 'app.pop_screen', 'Назад')]
 
     def __init__(self, user: User | None = None):
-        super().__init__()
+        super().__init__(_log=False)
         self.user = user or User(self.app.client.user_id)  # ty: ignore
+        self.log(f'open user screen username={user.username if user else "me"}')
 
     def compose(self):
         yield from super().compose()

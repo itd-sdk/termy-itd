@@ -58,7 +58,7 @@ class CommentWidget(Widget):
                 f'{"" if self.comment.is_liked else ""} {self.comment.likes_count}', classes=f'likes{" active" if self.comment.is_liked else ""}'
             )
 
-        if self.comment.replies.load_all():
+        if self.comment.replies_count > 0:
             with Vertical(classes='replies'):
                 for reply in self.comment.replies:
                     yield CommentWidget(reply, self)

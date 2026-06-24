@@ -7,6 +7,7 @@ from rich.markup import escape
 from textual import work
 from textual.app import ComposeResult
 from textual.containers import HorizontalScroll
+from textual.events import Click
 from textual.message import Message
 from textual.reactive import reactive
 from textual.widgets import Static
@@ -35,7 +36,8 @@ class ClickableStatic(Static):
     def __init__(self, content: str = '', *, id: str | None = None, classes: str | None = None, markup: bool = True) -> None:
         super().__init__(content, id=id, classes=classes, markup=markup)
 
-    def on_click(self):
+    def on_click(self, event: Click):
+        event.stop()
         if self.classes:
             self.post_message(self.Clicked(self.classes))
 
@@ -65,7 +67,8 @@ class Image(HalfcellImage, Renderable=HalfcellRenderable):
     def on_mount(self):
         self.load_image()
 
-    def on_click(self):
+    def on_click(self, event: Click):
+        event.stop()
         self.post_message(self.Clicked(self.idx))
 
 
@@ -105,7 +108,8 @@ class Avatar(ClickableStatic):
     def load_user(self):
         self.user.refresh()
 
-    async def on_click(self):
+    async def on_click(self, event: Click):
+        event.stop()
         if not self.clickable:
             return
         from app.screens import UserScreen
@@ -132,7 +136,8 @@ class DisplayName(ClickableStatic):
     def load_user(self):
         self.user.refresh()
 
-    async def on_click(self):
+    async def on_click(self, event: Click):
+        event.stop()
         if not self.clickable:
             return
         from app.screens import UserScreen
