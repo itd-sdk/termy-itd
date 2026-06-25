@@ -109,9 +109,9 @@ class Avatar(ClickableStatic):
         self.user.refresh()
 
     async def on_click(self, event: Click):
-        event.stop()
         if not self.clickable:
             return
+        event.stop()
         from app.screens import UserScreen
 
         if self.user.load_status != LoadStatus.FULL:
@@ -137,9 +137,9 @@ class DisplayName(ClickableStatic):
         self.user.refresh()
 
     async def on_click(self, event: Click):
-        event.stop()
         if not self.clickable:
             return
+        event.stop()
         from app.screens import UserScreen
 
         if self.user.load_status != LoadStatus.FULL:

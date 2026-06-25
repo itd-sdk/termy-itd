@@ -47,9 +47,9 @@ class UserWidget(Horizontal):
         self.place = place
 
     def compose(self):
-        yield Avatar(self.user, classes='place')
+        yield Avatar(self.user, clickable=False, classes='place')
         with Vertical():
-            yield DisplayName(self.user)
+            yield DisplayName(self.user, clickable=False)
             yield Static(f'@{self.user.username}', classes='username')
         yield Static(str(self.user.followers_count), classes='count')
 
@@ -59,7 +59,7 @@ class UserWidget(Horizontal):
 
 
 class SearchScreen(BaseScreen):
-    name = 'search'
+    screen_name = 'search'
     CSS_PATH = '../css/search.tcss'
 
     def compose(self):

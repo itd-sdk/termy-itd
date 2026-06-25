@@ -1,5 +1,6 @@
 from itd import Post
 from itd.comment import Comment
+from itd.enums import LoadStatus
 from itd.exceptions import BannedWordError, NotFoundError
 from textual import work
 from textual.app import ComposeResult
@@ -30,6 +31,10 @@ class PostScreen(BaseScreen):
 
     def compose(self) -> ComposeResult:
         yield from super().compose()
+
+        if self.post.load_status == LoadStatus.NO:
+            yield LoadingIndicator()  # я займу все место и тд
+            return
 
         yield Static('[@click=app.pop_screen][/] Пост', id='heading')
         with VerticalScroll():
@@ -123,23 +128,32 @@ class PostScreen(BaseScreen):
             if self.replying_comment is not None:
                 await self.action_cancel_reply()
 
-    @work
-    async def load_comments(self):
+    @work(thread=True, exclusive=True)
+    def load_comments(self):
+        if self.post.comments_count == 0:
+            return
         self.log('load comments')
         loading = LoadingIndicator()
         scroll = self.query_one(VerticalScroll)
-        await scroll.mount(loading)
+        self.app.call_from_thread(scroll.mount, loading, after=1)
 
-        try:
-            if not self.post.comments:
-                self.post.comments.load(50)
-            for comment in self.post.comments:
-                await scroll.mount(CommentWidget(comment), before=loading)
-        finally:
-            await loading.remove()
-        self.log('loaded')
+        if not self.post.comments:
+            self.post.comments.load(50)
+        for comment in self.post.comments:
+            self.app.call_from_thread(scroll.mount, CommentWidget(comment), before=loading)
+
+        loading.remove()
+
+    @work(thread=True, exclusive=True)
+    def load_post(self):
+        self.log('load post')
+        self.post.refresh()
+        self.refresh(recompose=True)
+        self.call_after_refresh(self.load_comments)
 
     def on_mount(self):
-        self.query_one(PostWidget).focus()
-        if self.post.comments_count > 0:
+        if self.post.load_status != LoadStatus.FULL:
+            self.load_post()
+        else:
+            self.query_one(PostWidget).focus()
             self.load_comments()

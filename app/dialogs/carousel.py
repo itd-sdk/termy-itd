@@ -1,6 +1,6 @@
 from itd.enums import AttachType
 from itd.file import CommentAttach, PostAttach
-from PIL import Image, UnidentifiedImageError
+from PIL import Image
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.reactive import reactive
@@ -34,15 +34,7 @@ class CarouselDialog(ModalScreen):
         self.files = []
         for attachment in attachments:
             if attachment.type == AttachType.IMAGE:
-                # хотя в инлайн карусели итак есть провекра на ломаные вложения, тут еще раз проверяется чтоб не была ошибка если вложений несколько и полмоано только одно из них (и потом можно просто стрелками до нее долистать)
-                # TODO: вообще лучше проверять ток 1 раз
-                try:
-                    img = Image.open(get_and_maybe_write(attachment))
-                    img.copy().verify()
-                except UnidentifiedImageError, OSError:
-                    self.files.append('Не удалось открыть вложение')
-                else:
-                    self.files.append(img)
+                self.files.append(Image.open(get_and_maybe_write(attachment)))
             else:
                 self.files.append(None)
 
@@ -78,7 +70,7 @@ class CarouselDialog(ModalScreen):
         else:
             yield Static('[MEDIA]', classes='attachment')
 
-        yield Static(f'{self.idx + 1}/{len(self.attachments)}', id='idx')
+        yield Static(f'{self.idx + 1}/{len(self.attachments)}', id='idx')  # TODO: сделать подсветку если 6\7
 
     @property
     def attachment(self):

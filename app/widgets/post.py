@@ -219,23 +219,23 @@ class PostsWidget(Vertical, can_focus=True):
         self.focused_post: PostWidget | None = None
         self.is_load_locked: bool = False
 
-    @work
-    async def load_posts(self):
+    @work(thread=True, exclusive=True)
+    def load_posts(self):
         if self.is_load_locked:
             return
         self.is_load_locked = True
+
         if len(self.children) > 20:
             for child in self.children[:20]:
-                await child.remove()
+                child.remove()
 
         loading = LoadingIndicator()
-        await self.mount(loading)
-        try:
-            for post in self.posts.load(20):
-                await self.mount(PostWidget(post), before=loading)
-        finally:
-            await loading.remove()
+        self.mount(loading)
 
+        for post in self.posts.load(20):
+            self.mount(PostWidget(post), before=loading)
+
+        loading.remove()
         self.is_load_locked = False
 
     def action_next_post(self):

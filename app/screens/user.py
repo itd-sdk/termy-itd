@@ -1,8 +1,9 @@
 from itd import User
+from itd.enums import LoadStatus
 from textual import work
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
-from textual.widgets import Static
+from textual.widgets import LoadingIndicator, Static
 from textual_image.widget import SixelImage
 
 from app.cache import get_and_maybe_write
@@ -30,6 +31,10 @@ class UserScreen(BaseScreen):
 
     def compose(self):
         yield from super().compose()
+
+        if self.user.load_status != LoadStatus.NO:
+            yield LoadingIndicator()  # я займу все место и тд
+            return
 
         with PostsScroll():
             yield SixelImage(on_error=lambda _: Static('Ошибка обработки банера', classes='attach-error'), classes='banner')
@@ -67,14 +72,22 @@ class UserScreen(BaseScreen):
     #         self.load_banner()
     #     self.refresh()
 
-    @work(thread=True)
+    @work(thread=True, exclusive=True)
     def load_banner(self):
         if not self.user.banner:
             return
+        self.log('load banner')
         banner = self.query_one('.banner', SixelImage)
 
         banner.image = get_and_maybe_write(self.user.banner)
         banner.loading = False
+
+    @work(thread=True, exclusive=True)
+    def load_user(self):
+        self.log('load user')
+        self.user.refresh()
+        self.refresh(recompose=True)
+        self.call_after_refresh(self.load_banner)
 
     def on_mount(self):
         # self.query_one('.user-info').loading = True

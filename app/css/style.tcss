@@ -2,7 +2,7 @@
     dock: left;
     background: $panel;
     padding: 1;
-    width: 15vw;
+    width: 25;
 }
 
 #logo * {
@@ -16,14 +16,15 @@
     padding: 1;
 }
 .tab:hover {
-    background: $surface;
+    background: $surface-lighten-1;
 }
 .active-tab {
     text-style: bold;
     background: $surface;
 }
 .tab-divider {
-    outline: hkey #000;
+    /*outline-top: wide #000;*/
+    color: $background-darken-3;
 }
 
 #about {
@@ -96,5 +97,5 @@ DisplayName {
 
 
 EnGlyph {
-    background: $panel;
+    background: transparent;
 }

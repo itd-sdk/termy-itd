@@ -5,6 +5,7 @@ from textual.widgets import Footer, Static
 from textual_englyph import EnGlyphText
 
 from app.dialogs import ConfirmDialog
+from app.dialogs.about import AboutDialog
 from app.widgets.shared import ClickableStatic
 
 
@@ -38,13 +39,15 @@ class BaseScreen(Screen):
                 ('  Профиль', 'profile')
             ):
                 yield ClickableStatic(title, classes=f'{"active-tab" if self.screen_name == name else ""} tab {name}-tab')
-                yield Static('', classes='tab-divider')
-            yield Static('termy-itd by @fdg', id='about')
+                yield Static('━━━━━━━━━━━━━━━━━━━━━━━', classes='tab-divider')
+            yield ClickableStatic('termy-itd by @fdg', classes='about', id='about')
         yield Footer()
 
     def on_clickable_static_clicked(self, event: ClickableStatic.Clicked):
         event.stop()
-        if 'home' in event.classes:
+        if event.classes == 'about':
+            self.app.push_screen(AboutDialog())
+        elif 'home' in event.classes:
             self.app.switch_mode('home')
         elif 'notifications' in event.classes:
             self.app.switch_mode('notifications')
