@@ -13,6 +13,7 @@ description = "Terminal client for итд.com"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "humanize>=4.16.0",
     "itd-sdk==2.4.4",
     "pyperclip>=1.11.0",
     "textual>=8.2.7",

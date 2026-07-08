@@ -28,3 +28,10 @@ UserWidget {
 #users Button {
     width: 1fr;
 }
+
+ContentSwitcher {
+    height: 1fr;
+}
+SearchScreen > Horizontal {
+    height: auto;
+}

@@ -92,16 +92,17 @@ class SearchScreen(BaseScreen):
             with Horizontal(id='search'):
                 with Vertical():
                     yield Static('Пользователи', classes='h1')
-                    yield Vertical(id='search-users')
+                    yield VerticalScroll(id='search-users')
 
                 with Vertical():
                     yield Static('Хэштэги', classes='h1')
-                    yield Vertical(id='search-hashtags')
+                    yield VerticalScroll(id='search-hashtags')
 
             yield Container(id='empty')
 
     @work(thread=True, exclusive=True)
     def load_hashtags(self):
+        self.log('load hashtags')
         hashtags = self.query_one('#hashtags', VerticalScroll)
         self.app.call_from_thread(hashtags.set_loading, True)
 
@@ -112,6 +113,7 @@ class SearchScreen(BaseScreen):
 
     @work(thread=True, exclusive=True)
     def load_clans(self):
+        self.log('load clans')
         clans = self.query_one('#clans', VerticalScroll)
         self.app.call_from_thread(clans.set_loading, True)
 
@@ -122,6 +124,7 @@ class SearchScreen(BaseScreen):
 
     @work(thread=True, exclusive=True)
     def load_users(self):
+        self.log('load top users')
         users = self.query_one('#users', Vertical)
         self.app.call_from_thread(users.set_loading, True)
 
@@ -160,8 +163,8 @@ class SearchScreen(BaseScreen):
     def search(self):
         users, hashtags = cast(tuple[list[User], list[Hashtag]], self.app.client.search(self.query_one(Input).value))  # ty: ignore
 
-        users_widget = self.query_one('#users-widget', Vertical)
-        hashtags_widget = self.query_one('#hashtags-widget', Vertical)
+        users_widget = self.query_one('#search-users', VerticalScroll)
+        hashtags_widget = self.query_one('#search-hashtags', VerticalScroll)
         users_widget.remove_children()
         hashtags_widget.remove_children()
 

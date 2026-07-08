@@ -5,7 +5,6 @@ from textual.screen import Screen
 from textual.widgets import Button, Input, Static
 from textual_englyph import EnGlyphText
 
-from app.screens.home import HomeScreen
 from app.storage import flush, storage
 
 
