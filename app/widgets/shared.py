@@ -1,7 +1,7 @@
 from typing import Iterable
 
 from itd import User
-from itd.enums import AttachType, LoadStatus
+from itd.enums import AttachType
 from itd.file import CommentAttach, PostAttach
 from rich.markup import escape
 from textual import work
@@ -97,30 +97,21 @@ class ImageCarousel(HorizontalScroll):
         self.app.push_screen(CarouselDialog(self.attachments, event.idx))
 
 
-class Avatar(ClickableStatic):
+class Avatar(Static):
     def __init__(self, user: User, clickable: bool = True, *, classes: str | None = None):
         super().__init__(user.avatar, classes=classes)
         self.add_class('avatar')
         self.user = user
         self.clickable = clickable
 
-    @work(thread=True)
-    def load_user(self):
-        self.user.refresh()
-
     async def on_click(self, event: Click):
-        if not self.clickable:
-            return
         event.stop()
-        from app.screens import UserScreen
-
-        if self.user.load_status != LoadStatus.FULL:
-            await self.load_user().wait()
+        from app.screens.user import UserScreen
 
         await self.app.push_screen(UserScreen(self.user))
 
 
-class DisplayName(ClickableStatic):
+class DisplayName(Static):
     def __init__(self, user: User, *, clickable: bool = True, classes: str | None = None):
         content = '[bold underline]' + escape(user.display_name) + '[/bold underline]'
         if user.is_subscribed:
@@ -132,17 +123,8 @@ class DisplayName(ClickableStatic):
 
         super().__init__(content, classes=classes)
 
-    @work(thread=True)
-    def load_user(self):
-        self.user.refresh()
-
     async def on_click(self, event: Click):
-        if not self.clickable:
-            return
         event.stop()
-        from app.screens import UserScreen
-
-        if self.user.load_status != LoadStatus.FULL:
-            await self.load_user().wait()
+        from app.screens.user import UserScreen
 
         await self.app.push_screen(UserScreen(self.user))

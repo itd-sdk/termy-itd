@@ -13,10 +13,6 @@ Screen {
     margin-bottom: 1;
 }
 
-EnGlyph {
-    background: $panel;
-}
-
 #error {
     color: $error;
 }

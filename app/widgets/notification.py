@@ -34,7 +34,7 @@ class NotificationWidget(Widget, can_focus=True):
                         yield ClickableStatic('󰄬', classes='read')
 
             if self.notification.preview:
-                yield Static(self.notification.preview)
+                yield Static(self.notification.preview.replace('\n', '  '))
 
             yield Static(self.notification.created_at.strftime('%d.%m.%y %H:%M:%S'), classes='notification-date')
 

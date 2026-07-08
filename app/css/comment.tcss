@@ -37,3 +37,7 @@ PostScreen > VerticalScroll > CommentWidget {
 .replies > CommentWidget {
     background: $panel;
 }
+
+.load-replies {
+    color: $primary;
+}

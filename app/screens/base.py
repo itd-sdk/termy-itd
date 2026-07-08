@@ -44,6 +44,7 @@ class BaseScreen(Screen):
         yield Footer()
 
     def on_clickable_static_clicked(self, event: ClickableStatic.Clicked):
+        self.log('screen')
         event.stop()
         if event.classes == 'about':
             self.app.push_screen(AboutDialog())

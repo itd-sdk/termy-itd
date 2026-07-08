@@ -7,7 +7,6 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, VerticalScroll
 from textual.widgets import Button, Input, LoadingIndicator, Static
-from textual.worker import Worker
 
 from app.screens.base import BaseScreen
 from app.widgets import CommentWidget, PostWidget
@@ -27,7 +26,7 @@ class PostScreen(BaseScreen):
         self.current_tab = 'post'
         self.post = post
         self.replying_comment: Comment | None = None
-        self.log.info.info.info.info.info.info.info.info.info.info(f'open post id={self.post.id}')  # This is info.
+        self.log(f'open post id={self.post.id}')
 
     def compose(self) -> ComposeResult:
         yield from super().compose()
@@ -47,10 +46,10 @@ class PostScreen(BaseScreen):
         self.query_one(Button).disabled = not bool(event.input.value)
 
     async def on_button_pressed(self):
-        await self.add_comment()
+        self.add_comment()
 
     async def on_input_submitted(self):
-        await self.add_comment()
+        self.add_comment()
 
     async def on_comment_widget_replied(self, event: CommentWidget.Replied):
         event.stop()
@@ -78,55 +77,54 @@ class PostScreen(BaseScreen):
         self.query_one('#comment-input', Input).placeholder = 'Ответ..'
         self.action_focus_input()
 
-    async def action_cancel_reply(self):
+    def action_cancel_reply(self):
         self.replying_comment = None
-        await self.query_one('#reply-header').remove()
+        self.query_one('#reply-header').remove()
         self.query_one('#comment-input', Input).placeholder = 'Комментарий..'
 
-    async def on_clickable_static_clicked(self, event: ClickableStatic.Clicked):
+    def on_clickable_static_clicked(self, event: ClickableStatic.Clicked):
         event.stop()
         if 'error' in event.classes:
-            await self.action_cancel_reply()
+            self.action_cancel_reply()
 
     def action_focus_input(self):
         self.query_one('#comment-input', Input).focus()
 
-    @work
-    async def _add_comment(self, value: str) -> Comment:
-        if self.replying_comment is not None:
-            return self.replying_comment.reply(value)
-        else:
-            return self.post.add_comment(value)
-
-    async def add_comment(self):
-        input = self.query_one(Input)
+    @work(thread=True, exclusive=True)
+    def add_comment(self):
+        button = self.query_one('#add-comment', Button)
+        input = self.query_one('#comment-input', Input)
         scroll = self.query_one(VerticalScroll)
+        self.app.call_from_thread(button.set_loading, True)
+
         try:
-            worker: Worker = self._add_comment(input.value)
-            await worker.wait()
-            assert worker.result
-            comment = CommentWidget(worker.result)
+            if self.replying_comment is not None:
+                comment = CommentWidget(self.replying_comment.reply(input.value))
+            else:
+                comment = CommentWidget(self.post.add_comment(input.value))
         except NotFoundError:
             self.notify('Пост не найден', severity='error')
         except BannedWordError:
             self.notify('В комментарии содержутся запрещенные слова', severity='error')
         else:
-            if comment.comment.reply_to is None:
-                await scroll.mount(comment, before=1)
+            if self.replying_comment is None:
+                self.app.call_from_thread(scroll.mount, comment, before=1)
 
-            elif self.replying_comment:
+            else:
                 for child in scroll.query(CommentWidget):
                     if child.comment.id == self.replying_comment.id:
-                        if child.comment.reply_to is None:
-                            child.query_one('.replies').mount(comment, before=1)
+                        if not child.comment.is_reply:
+                            self.app.call_from_thread(child.query_one('.replies').mount, comment, before=1)
                         else:
-                            child._mount_reply(comment)
+                            self.app.call_from_thread(child._mount_reply, comment)
+                        break
 
             scroll.scroll_to_widget(comment)
             comment.focus()
             input.clear()
             if self.replying_comment is not None:
-                await self.action_cancel_reply()
+                self.action_cancel_reply()
+            self.app.call_from_thread(button.set_loading, False)
 
     @work(thread=True, exclusive=True)
     def load_comments(self):
@@ -147,9 +145,14 @@ class PostScreen(BaseScreen):
     @work(thread=True, exclusive=True)
     def load_post(self):
         self.log('load post')
-        self.post.refresh()
-        self.refresh(recompose=True)
-        self.call_after_refresh(self.load_comments)
+        try:
+            self.post.refresh()
+        except NotFoundError:
+            self.notify('Пост не найден', severity='error')
+            self.app.pop_screen()
+        else:
+            self.refresh(recompose=True)
+            self.call_after_refresh(self.load_comments)
 
     def on_mount(self):
         if self.post.load_status != LoadStatus.FULL:

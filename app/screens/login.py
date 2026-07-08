@@ -11,16 +11,11 @@ from app.storage import flush, storage
 
 class LoginScreen(Screen):
     CSS_PATH = '../css/login.tcss'
-    DEFAULT_CSS = """
-    EnGlyph {
-        background: $panel; # idk why but it not works in a css file
-    }
-    """
 
     def compose(self):
         with Vertical(id='container'):
             with Center():
-                yield EnGlyphText('ИТД', font_name='casio-fx-9860gii.ttf', font_size=8, basis=(1, 2))
+                yield EnGlyphText('ИТД', font_name='casio-fx-9860gii.ttf', font_size=6, basis=(1, 2))
             with Center():
                 yield Input(placeholder='refresh_token')
             yield Static(id='error')
@@ -45,4 +40,4 @@ class LoginScreen(Screen):
             storage['refresh'] = input.value
             flush()
             self.app.client = client  # ty: ignore[unresolved-attribute]
-            self.app.switch_screen(HomeScreen())
+            self.app.switch_mode('home')

@@ -97,5 +97,5 @@ DisplayName {
 
 
 EnGlyph {
-    background: transparent;
+    background: $panel;
 }

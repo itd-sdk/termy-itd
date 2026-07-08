@@ -51,11 +51,15 @@ class TermyITDApp(App):
         if not storage.get('refresh'):
             self.push_screen(LoginScreen())
 
-        self.client = ITDClient(
-            storage['refresh'], config=ITDConfig('client', post_update_stats=False, post_view_increment=True, load_on_iter=None, load_on_getattr=False)
-        )
         try:
-            self.client.refresh_auth()
+            self.client = ITDClient.from_file(
+                'default',  #'termy-itd',
+                initial_refresh=storage['refresh'],
+                verify_refresh=True,
+                config=ITDConfig(
+                    'client', timeout=10, timeout_file=30, post_update_stats=False, post_view_increment=True, load_on_iter=None, load_on_getattr=False
+                )
+            )
         except SessionExpiredError:
             self.notify('Сессия истекла', severity='error')
         except SessionNotFoundError:
@@ -67,6 +71,9 @@ class TermyITDApp(App):
             self.notifications.on_notification = self._on_notification  # ty: ignore[invalid-assignment]
             self.switch_mode('home')
             self.call_after_refresh(self.load_notifications)
+            return
+
+        self.push_screen(LoginScreen())
 
     @work(thread=True, exclusive=True)
     def load_notifications(self):

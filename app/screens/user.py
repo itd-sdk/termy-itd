@@ -22,7 +22,7 @@ class Counter(ClickableStatic):
 class UserScreen(BaseScreen):
     screen_name = 'user'
     CSS_PATH = '../css/user.tcss'
-    BINDINGS = [Binding('escape', 'app.pop_screen', 'Назад')]
+    BINDINGS = [Binding('escape', 'app.pop_screen', 'Назад'), Binding('f5', 'refresh', 'Обновить')]
 
     def __init__(self, user: User | None = None):
         super().__init__(_log=False)
@@ -32,7 +32,7 @@ class UserScreen(BaseScreen):
     def compose(self):
         yield from super().compose()
 
-        if self.user.load_status != LoadStatus.NO:
+        if self.user.load_status != LoadStatus.FULL:
             yield LoadingIndicator()  # я займу все место и тд
             return
 
@@ -78,9 +78,9 @@ class UserScreen(BaseScreen):
             return
         self.log('load banner')
         banner = self.query_one('.banner', SixelImage)
-
+        self.app.call_from_thread(banner.set_loading, True)
         banner.image = get_and_maybe_write(self.user.banner)
-        banner.loading = False
+        self.app.call_from_thread(banner.set_loading, False)
 
     @work(thread=True, exclusive=True)
     def load_user(self):
@@ -88,13 +88,32 @@ class UserScreen(BaseScreen):
         self.user.refresh()
         self.refresh(recompose=True)
         self.call_after_refresh(self.load_banner)
+        if not self.user.posts:
+            self.call_after_refresh(lambda: self.query_one(PostsWidget).load_posts())
+
+    @work(thread=True, exclusive=True)
+    def refresh_user(self):
+        self.log('refresh user')
+        self.user.load_status = LoadStatus.NO
+        self.refresh(recompose=True)
+
+        self.user.refresh()
+        self.refresh(recompose=True)
+
+        self.call_after_refresh(self.load_banner)
+        self.call_after_refresh(lambda: self.query_one(PostsWidget).action_refresh())
+        self.call_after_refresh(self.focus)
 
     def on_mount(self):
-        # self.query_one('.user-info').loading = True
-        self.query_one('.banner').loading = True
+        if self.user.load_status != LoadStatus.FULL:
+            self.load_user()
+            return
+
         if self.user.banner:
             self.load_banner()
+        if not self.user.posts:
+            self.query_one(PostsWidget).load_posts()
+        self.focus()
 
-        posts = self.query_one(PostsWidget)
-        if not posts.posts:
-            posts.load_posts()
+    def action_refresh(self):
+        self.refresh_user()

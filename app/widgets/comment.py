@@ -41,11 +41,16 @@ class CommentWidget(Widget):
                 yield DisplayName(self.comment.author)
                 yield Static(f'@{self.comment.author.username}', classes='username')
             yield Static(self.comment.created_at.strftime('%d.%m.%y %H:%M:%S'), classes='date')
+
             with Horizontal(classes='actions'):
                 yield ClickableStatic('󰒗', classes='share')
                 yield ClickableStatic('', classes='copy')
-                yield ClickableStatic('', classes='report')
-                yield ClickableStatic('󰆴', classes='delete')
+                if self.comment.can_edit:
+                    yield ClickableStatic('󰏫', classes='edit')
+                if self.comment.can_report:
+                    yield ClickableStatic('', classes='report')
+                if self.comment.can_delete:
+                    yield ClickableStatic('󰆴', classes='delete')
 
         yield Static(f'{f"[dim underline]@{self.comment.reply_to.username}[/] " if self.comment.reply_to is not None else ""}{self.comment.content}')
 
@@ -58,10 +63,14 @@ class CommentWidget(Widget):
                 f'{"" if self.comment.is_liked else ""} {self.comment.likes_count}', classes=f'likes{" active" if self.comment.is_liked else ""}'
             )
 
-        if self.comment.replies_count > 0:
+        if not self.comment.is_reply and self.comment.replies_count > 0:
             with Vertical(classes='replies'):
-                for reply in self.comment.replies:
+                for reply in self.comment.first_replies:
                     yield CommentWidget(reply, self)
+                if len(self.comment.first_replies) < self.comment.replies_count:
+                    yield ClickableStatic(
+                        f'Загрузить еще [b]{min(100, self.comment.replies_count - len(self.comment.first_replies))}[/b] ответов', classes='load-replies'
+                    )
 
     def action_like(self):
         button = self.query_one('.likes', ClickableStatic)
@@ -81,6 +90,9 @@ class CommentWidget(Widget):
             self.action_like()
         if 'reply' in event.classes:
             self.post_message(self.Replied(self.comment))
+        if 'load-replies' in event.classes:
+            self.query_one('.load-replies', ClickableStatic).update('чел я это еще не добавил и тд')
+            self.notify('todo', severity='error')
 
     def action_open_attachments(self):
         if self.comment.attachments:

@@ -210,7 +210,7 @@ class OriginalPostWidget(PostWidget, inherit_bindings=False):
 
 
 class PostsWidget(Vertical, can_focus=True):
-    BINDINGS = [Binding('j', 'next_post', 'Следующий пост'), Binding('k', 'prev_post', 'Предыдущий пост'), Binding('f5', 'refresh', 'Обновить страницу')]
+    BINDINGS = [Binding('j', 'next_post', 'Следующий пост'), Binding('k', 'prev_post', 'Предыдущий пост'), Binding('f5', 'refresh', 'Обновить')]
 
     def __init__(self, posts: _BasePosts) -> None:
         super().__init__(classes='posts', id=f'{posts.tab.value}-posts' if isinstance(posts, Posts) else None)
@@ -224,18 +224,19 @@ class PostsWidget(Vertical, can_focus=True):
         if self.is_load_locked:
             return
         self.is_load_locked = True
+        self.log('load posts')
 
-        if len(self.children) > 20:
-            for child in self.children[:20]:
-                child.remove()
+        if len(self.children) > 100:
+            for child in self.children[:100]:
+                self.app.call_from_thread(child.remove)
 
         loading = LoadingIndicator()
-        self.mount(loading)
+        self.app.call_from_thread(self.mount, loading)
 
         for post in self.posts.load(20):
-            self.mount(PostWidget(post), before=loading)
+            self.app.call_from_thread(self.mount, PostWidget(post), before=loading)
 
-        loading.remove()
+        self.app.call_from_thread(loading.remove)
         self.is_load_locked = False
 
     def action_next_post(self):
@@ -267,12 +268,11 @@ class PostsWidget(Vertical, can_focus=True):
             self.focused_post = post
 
     def action_refresh(self):
+        self.log('refresh posts')
         self.remove_children()
 
         self.focused_post = None
         self.posts.clear()
-        self.posts.cursor = None
-        self.posts.has_more = True
         self.load_posts()
 
         # analog to self.scroll_home, original not updates scrollbar idk why
