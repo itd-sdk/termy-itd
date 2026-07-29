@@ -57,12 +57,16 @@ class Image(HalfcellImage, Renderable=HalfcellRenderable):
 
     @work(thread=True)
     def load_image(self):
-        self.image = get_and_maybe_write(self.attachment)
+        try:
+            self.image = get_and_maybe_write(self.attachment)
+        except Exception as e:
+            self.log.error(f'Ошибка получения изображения: {e.__class__.__name__}: {e}')
+        else:
 
-        def _remove_loading():
-            self.loading = False
+            def _remove_loading():
+                self.loading = False
 
-        self.call_next(_remove_loading)
+            self.call_next(_remove_loading)
 
     def on_mount(self):
         self.load_image()

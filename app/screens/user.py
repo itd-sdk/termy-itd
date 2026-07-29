@@ -28,6 +28,8 @@ class UserScreen(BaseScreen):
         super().__init__(_log=False)
         self.user = user or User(self.app.client.user_id)  # ty: ignore
         self.log(f'open user screen username={user.username if user else "me"}')
+        if user is None:
+            self.screen_name = 'profile'
 
     def compose(self):
         yield from super().compose()
@@ -45,7 +47,7 @@ class UserScreen(BaseScreen):
                     with Vertical():
                         with Horizontal():
                             yield DisplayName(self.user, clickable=False)
-                            yield Static(f'@{self.user.username}', classes='username')
+                            yield Static(f'@{self.user.username}', classes='user-info-username')
 
                         if self.user.bio:
                             yield Static(self.user.bio, classes='bio')

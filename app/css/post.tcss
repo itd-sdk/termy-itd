@@ -129,3 +129,32 @@ PostScreen > Horizontal {
     text-align: right;
     color: red;
 }
+
+.pinned-post {
+    color: $foreground-muted;
+}
+
+.deleted-text {
+    color: $error;
+    width: 1fr;
+    content-align: left middle;
+    height: 3;
+}
+
+.screen-deleted-text {
+    margin-top: 1;
+    text-align: center;
+    color: $error;
+}
+
+.deleted {
+    height: 5;
+}
+
+#back {
+    margin-right: 1;
+}
+.screen-deleted {
+    align: center middle;
+    margin-top: 2;
+}

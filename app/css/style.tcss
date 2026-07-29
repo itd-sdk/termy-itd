@@ -95,7 +95,6 @@ DisplayName {
     margin: 1;
 }
 
-
 EnGlyph {
     background: $panel;
 }

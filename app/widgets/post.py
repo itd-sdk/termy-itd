@@ -10,13 +10,16 @@ from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.events import Click
 from textual.message import Message
 from textual.widget import Widget
-from textual.widgets import LoadingIndicator, Static
+from textual.widgets import Button, LoadingIndicator, Static
 
 from app.dialogs import CarouselDialog, ConfirmDialog, RepostDialog
 from app.widgets.shared import Avatar, ClickableStatic, DisplayName, ImageCarousel
 
 
 def _compose_post(post: Post, original_post: bool = True) -> ComposeResult:
+    if post.is_pinned:
+        yield Static('󰐃 Закрепленный пост', classes='pinned-post')
+
     with Horizontal(classes='post-top'):
         yield Avatar(post.author)
         with Vertical():
@@ -32,7 +35,8 @@ def _compose_post(post: Post, original_post: bool = True) -> ComposeResult:
                 yield ClickableStatic('', classes='pin')
                 yield ClickableStatic('󰆴', classes='delete')
 
-    yield Static(post.content)
+    if post.content:
+        yield Static(post.content)
 
     if post.attachments:
         yield ImageCarousel(post.attachments)
@@ -62,8 +66,12 @@ class PostWidget(Widget):
         Binding('p', 'pin', 'Закрепить'),
         Binding('delete', 'delete', 'Удалить'),
         Binding('alt+r', 'report', 'Пожаловаться'),
+        Binding('r', 'restore', 'Восстановить'),
         Binding('f', 'focus_original_post', 'Сфокусироваться на ориг. посте')
     ]
+
+    class Deleted(Message):
+        pass
 
     def __init__(self, post: Post):
         super().__init__(classes='post')
@@ -71,6 +79,7 @@ class PostWidget(Widget):
         self.view_started_at: int | None = None
         self.view_ended_at: int | None = None
         self.seen_bottom: bool = False
+        self.is_deleted = False
 
     def compose(self) -> ComposeResult:
         yield from _compose_post(self.post)
@@ -133,12 +142,35 @@ class PostWidget(Widget):
         self.app.push_screen(ConfirmDialog('Закрепление', 'Действительно закрепить пост?'))
 
     def action_delete(self):
-        self.app.push_screen(ConfirmDialog('Удаление', 'Действительно удалить пост?'))
+        self.delete_post()
+        self.timer.stop()
+
+    def on_button_pressed(self):
+        self.action_restore()
+
+    def action_restore(self):
+        self.post.restore()
+        self.is_deleted = False
+        self.refresh_bindings()
+        self.remove_class('deleted')
+        self.refresh(recompose=True)
+
+    @work(exclusive=True)
+    async def delete_post(self):
+        if await self.app.push_screen_wait(ConfirmDialog('Удаление', 'Действительно удалить пост?')):
+            self.post.delete()
+            self.post_message(self.Deleted())
+            self.remove_children()
+            self.is_deleted = True
+            self.mount(Horizontal(Static('Пост удален', classes='deleted-text'), Button('Восстановить', variant='error')))
+            self.add_class('deleted')
+            self.refresh_bindings()
+            self.notify('Пост удален')
 
     def action_report(self):
         self.notify('todo', severity='error')
 
-    def on_clickable_static_clicked(self, event: ClickableStatic.Clicked):
+    async def on_clickable_static_clicked(self, event: ClickableStatic.Clicked):
         event.stop()
         if 'like' in event.classes:
             self.action_like()
@@ -159,6 +191,8 @@ class PostWidget(Widget):
         self.focus()
 
     def check_is_visible(self):
+        if self.is_deleted:
+            return
         if self.view_started_at and self.view_ended_at:
             return
 
@@ -183,6 +217,8 @@ class PostWidget(Widget):
         self.timer = self.set_interval(0.1, self.check_is_visible)
 
     def on_click(self, event: Click):
+        if self.is_deleted:
+            return
         if event.chain >= 2:
             event.stop()
             self.action_open()
@@ -191,6 +227,12 @@ class PostWidget(Widget):
         from app.screens import PostScreen  # stupid circular import
 
         self.app.push_screen(PostScreen(self.post))
+
+    def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
+        if action in ('open', 'report', 'delete', 'like', 'repost', 'copy', 'copy_url', 'open_url', 'pin', 'focus_original_post', 'open_attachments'):
+            return not self.is_deleted
+        if action == 'restore':
+            return self.is_deleted
 
 
 class OriginalPostWidget(PostWidget, inherit_bindings=False):

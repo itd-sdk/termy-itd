@@ -1,15 +1,12 @@
 from textual.app import ComposeResult
 from textual.binding import Binding
+from textual.containers import Container, Horizontal
 from textual.screen import ModalScreen
-from textual.containers import Horizontal, Container
 from textual.widgets import Button, Static
 
 
-class ConfirmDialog(ModalScreen):
-    BINDINGS = [
-        Binding('escape', 'dismiss', 'Отмена'),
-        Binding('ctrl+enter', 'dismiss(True)', 'ОК')
-    ]
+class ConfirmDialog(ModalScreen[bool]):
+    BINDINGS = [Binding('escape', 'dismiss', 'Отмена'), Binding('ctrl+enter', 'dismiss(True)', 'ОК')]
 
     def __init__(self, title: str, description: str) -> None:
         super().__init__()
@@ -19,12 +16,13 @@ class ConfirmDialog(ModalScreen):
     def compose(self) -> ComposeResult:
         with Container(id='dialog'):
             yield Static(self.description)
-            with Horizontal(id="dialog-buttons"):
+            with Horizontal(id='dialog-buttons'):
                 yield Button('Отмена', 'error')
                 yield Button('ОК', 'success', id='ok')
 
     def on_mount(self):
         self.query_one('#dialog').border_title = self.title
+        self.query_one('#ok').focus()
 
     def on_button_pressed(self, event: Button.Pressed):
         if event.button.id == 'ok':

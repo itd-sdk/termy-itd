@@ -40,6 +40,6 @@ Counter {
     margin-right: 3;
 }
 
-.username {
+.user-info-username {
   margin-left: 1;
 }

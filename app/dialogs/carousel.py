@@ -34,7 +34,7 @@ class CarouselDialog(ModalScreen):
         self.files = []
         for attachment in attachments:
             if attachment.type == AttachType.IMAGE:
-                self.files.append(Image.open(get_and_maybe_write(attachment)))
+                self.files.append(get_and_maybe_write(attachment))
             else:
                 self.files.append(None)
 

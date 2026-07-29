@@ -5,7 +5,7 @@ from itd.exceptions import BannedWordError, NotFoundError
 from textual import work
 from textual.app import ComposeResult
 from textual.binding import Binding
-from textual.containers import Horizontal, VerticalScroll
+from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.widgets import Button, Input, LoadingIndicator, Static
 
 from app.screens.base import BaseScreen
@@ -45,8 +45,14 @@ class PostScreen(BaseScreen):
     def on_input_changed(self, event: Input.Changed):
         self.query_one(Button).disabled = not bool(event.input.value)
 
-    async def on_button_pressed(self):
-        self.add_comment()
+    async def on_button_pressed(self, event: Button.Pressed):
+        event.stop()
+        if event.button.id == 'add-comment':
+            self.add_comment()
+        elif event.button.id == 'restore':
+            self.restore_post()
+        elif event.button.id == 'back':
+            self.app.pop_screen()
 
     async def on_input_submitted(self):
         self.add_comment()
@@ -91,6 +97,11 @@ class PostScreen(BaseScreen):
         self.query_one('#comment-input', Input).focus()
 
     @work(thread=True, exclusive=True)
+    def restore_post(self):
+        self.post.restore()
+        self.refresh(recompose=True)  # remount post widget
+
+    @work(thread=True, exclusive=True)
     def add_comment(self):
         button = self.query_one('#add-comment', Button)
         input = self.query_one('#comment-input', Input)
@@ -114,7 +125,10 @@ class PostScreen(BaseScreen):
                 for child in scroll.query(CommentWidget):
                     if child.comment.id == self.replying_comment.id:
                         if not child.comment.is_reply:
-                            self.app.call_from_thread(child.query_one('.replies').mount, comment, before=1)
+                            if child.comment.replies_count > 1:
+                                self.app.call_from_thread(child.query_one('.replies').mount, comment, before=1)
+                            else:
+                                self.app.call_from_thread(child.mount, Vertical(comment, classes='replies'))
                         else:
                             self.app.call_from_thread(child._mount_reply, comment)
                         break
@@ -153,6 +167,7 @@ class PostScreen(BaseScreen):
         else:
             self.refresh(recompose=True)
             self.call_after_refresh(self.load_comments)
+            self.call_after_refresh(lambda: self.query_one(PostWidget).focus())
 
     def on_mount(self):
         if self.post.load_status != LoadStatus.FULL:
@@ -160,3 +175,12 @@ class PostScreen(BaseScreen):
         else:
             self.query_one(PostWidget).focus()
             self.load_comments()
+
+    def on_post_widget_deleted(self, event: PostWidget.Deleted):
+        event.stop()
+        self.remove_children(self.query().exclude('#heading').exclude('#sidebar').exclude('#sidebar *'))
+        self.mount(Static('Пост удален', classes='screen-deleted-text'), after='#heading')
+        self.mount(
+            Horizontal(Button('Назад', id='back'), Button('Восстановить', id='restore', variant='error'), classes='screen-deleted'),
+            after='.screen-deleted-text'
+        )

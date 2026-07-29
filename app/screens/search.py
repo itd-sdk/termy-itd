@@ -59,7 +59,6 @@ class UserWidget(Horizontal):
         yield Static(str(self.user.followers_count), classes='count')
 
     async def on_click(self, event: Click):
-        self.log('usrwdg')
         event.stop()
         await self.app.push_screen(UserScreen(self.user))
 
