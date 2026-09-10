@@ -1,7 +1,4 @@
-from typing import cast
-
-from itd import Clan, Hashtag, Hashtags, TopClans, User
-from itd.user import WhoToFollow
+from itd import Clan, Hashtag, Hashtags, Search, TopClans, User, WhoToFollow
 from textual import work
 from textual.containers import Container, Horizontal, Vertical, VerticalScroll
 from textual.events import Click
@@ -160,15 +157,15 @@ class SearchScreen(BaseScreen):
             self.search()
 
     def search(self):
-        users, hashtags = cast(tuple[list[User], list[Hashtag]], self.app.client.search(self.query_one(Input).value))  # ty: ignore
+        search = Search(self.query_one(Input).value)
 
         users_widget = self.query_one('#search-users', VerticalScroll)
         hashtags_widget = self.query_one('#search-hashtags', VerticalScroll)
         users_widget.remove_children()
         hashtags_widget.remove_children()
 
-        for i, user in enumerate(users):
+        for i, user in enumerate(search.users):
             users_widget.mount(UserWidget(i, user))
 
-        for i, hashtag in enumerate(hashtags):
+        for i, hashtag in enumerate(search.hashtags):
             hashtags_widget.mount(HashtagWidget(i, hashtag))

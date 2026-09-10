@@ -1,6 +1,6 @@
 from webbrowser import open
 
-from itd.comment import Comment
+from itd.models.comment import Comment
 from pyperclip import copy
 from textual.app import ComposeResult
 from textual.binding import Binding

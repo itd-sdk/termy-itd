@@ -1,7 +1,7 @@
 from webbrowser import open
 
 from itd import Post, Posts
-from itd.post import _BasePosts
+from itd.models.post import _BasePosts
 from pyperclip import copy
 from textual import work
 from textual.app import ComposeResult
@@ -202,7 +202,7 @@ class PostWidget(Widget):
         if not self.seen_bottom and bottom_visible:
             self.seen_bottom = True
 
-        if top_visible:
+        if top_visible and not self.post.visible:
             self.post.set_visible()
 
         elif self.seen_bottom and not top_visible and not bottom_visible:

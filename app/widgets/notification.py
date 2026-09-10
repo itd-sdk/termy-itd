@@ -1,6 +1,6 @@
 from itd import Post
 from itd.enums import LoadStatus, NotificationTargetType
-from itd.notification import Notification
+from itd.models.notification import Notification
 from textual import work
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical

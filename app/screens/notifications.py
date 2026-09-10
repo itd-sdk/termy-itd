@@ -1,4 +1,4 @@
-from itd.notification import Notification
+from itd.models.notification import Notification
 from textual import work
 from textual.app import ComposeResult
 from textual.binding import Binding

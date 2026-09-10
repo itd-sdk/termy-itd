@@ -1,5 +1,5 @@
 from itd import Post
-from itd.comment import Comment
+from itd.models.comment import Comment
 from itd.enums import LoadStatus
 from itd.exceptions import BannedWordError, NotFoundError
 from textual import work

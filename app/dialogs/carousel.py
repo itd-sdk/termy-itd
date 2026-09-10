@@ -1,6 +1,5 @@
 from itd.enums import AttachType
-from itd.file import CommentAttach, PostAttach
-from PIL import Image
+from itd.models.file import CommentAttach, PostAttach
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.reactive import reactive

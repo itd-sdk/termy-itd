@@ -1,7 +1,7 @@
 from io import BytesIO
 from pathlib import Path
 
-from itd.file import PostAttach
+from itd.models.file import PostAttach
 from requests import get
 
 CACHE_DIR = Path(__file__).parent.parent / 'cache'

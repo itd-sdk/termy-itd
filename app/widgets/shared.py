@@ -2,7 +2,7 @@ from typing import Iterable
 
 from itd import User
 from itd.enums import AttachType
-from itd.file import CommentAttach, PostAttach
+from itd.models.file import CommentAttach, PostAttach
 from rich.markup import escape
 from textual import work
 from textual.app import ComposeResult
