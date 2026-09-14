@@ -14,6 +14,9 @@
 
 .tab {
     padding: 1;
+    # border-right: outer black;
+    # border-bottom: outer black;
+
 }
 .tab:hover {
     background: $surface-lighten-1;
@@ -21,10 +24,13 @@
 .active-tab {
     text-style: bold;
     background: $surface;
+    # border-bottom: tall black;
+    # border-right: tall black;
 }
 .tab-divider {
     /*outline-top: wide #000;*/
     color: $background-darken-3;
+    text-overflow: clip;
 }
 
 #about {
@@ -97,4 +103,18 @@ DisplayName {
 
 EnGlyph {
     background: $panel;
+}
+
+
+.error {
+    color: $error;
+}
+.warning {
+    color: $warning;
+}
+.success {
+    color: $success;
+}
+.dim {
+    color: $foreground-muted;
 }

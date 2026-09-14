@@ -1,6 +1,6 @@
 from itd import ITDClient, ITDConfig, Notifications, init_client
 from itd.core.logger import setup_logging
-from itd.exceptions import SessionExpiredError, SessionNotFoundError, SessionRevokedError
+from itd.exceptions import AccessTokenExpiredError, InsufficientAuthLevelError, SessionExpiredError, SessionNotFoundError, SessionRevokedError
 from itd.models.notification import Notification
 from textual import work
 from textual.app import App
@@ -8,7 +8,6 @@ from textual.logging import TextualHandler
 
 from app.screens import HomeScreen, LoginScreen, NotificationsScreen, SearchScreen, UserScreen
 from app.screens.base import BaseScreen
-from app.storage import storage
 from app.widgets.shared import ClickableStatic
 
 setup_logging('debug', colorful=True).addHandler(TextualHandler())
@@ -36,24 +35,10 @@ class TermyITDApp(App):
         for screen in self.screens:
             screen.query_one('.notifications-tab', ClickableStatic).update(title)
 
-    def _on_notification(self, notification: Notification):
-        self.update_notifications_count(self.notifications.unread_count)
-        self.log(f'new notification type={notification.type.value}')
-        self.notify(
-            notification.preview or notification.get_text(avatar=True),
-            title=notification.get_text(avatar=True) if notification.preview else 'Новое уведомление',
-            timeout=15
-        )
-        if self.is_screen_installed('notifications'):
-            self.get_screen('notifications')._add_notification(notification)  # ty: ignore [unresolved-attribute]
-
     def on_mount(self):
-        if not storage.get('refresh'):
-            self.push_screen(LoginScreen())
-
         try:
             self.client = init_client(
-                'default',  #'termy-itd',
+                'termy-itd',
                 config=ITDConfig(
                     'client',
                     timeout=10,
@@ -65,20 +50,43 @@ class TermyITDApp(App):
                     dwell_check_active=False
                 )
             )
+            self.client.user.refresh()
         except SessionExpiredError:
             self.notify('Сессия истекла', severity='error')
         except SessionNotFoundError:
             self.notify('Сессия не найдена', severity='error')
         except SessionRevokedError:
             self.notify('Сессия ревокнута (выход из аккаунта)', severity='error')
+        except AccessTokenExpiredError:
+            self.notify('access токен истек', severity='error')
+        except InsufficientAuthLevelError:
+            pass  # need to login
         else:
-            self.notifications = Notifications()
-            self.notifications.on_notification = self._on_notification  # ty: ignore[invalid-assignment]
-            self.switch_mode('home')
-            self.call_after_refresh(self.load_notifications)
+            self.startup()
             return
 
-        self.push_screen(LoginScreen())
+        self.push_screen(LoginScreen(), lambda client: self.startup(client))
+
+    def startup(self, client=None):
+        if client:
+            self.client = client
+        self.log(f'startup auth={self.client.auth_level.value}')
+        self.notifications = Notifications()
+
+        @self.notifications.on()
+        def _on_notification(self, notification: Notification):
+            self.update_notifications_count(self.notifications.unread_count)
+            self.log(f'new notification type={notification.type.value}')
+            self.notify(
+                notification.preview or notification.get_text(avatar=True),
+                title=notification.get_text(avatar=True) if notification.preview else 'Новое уведомление',
+                timeout=15
+            )
+            if self.is_screen_installed('notifications'):
+                self.get_screen('notifications')._add_notification(notification)
+
+        self.switch_mode('home')
+        self.call_after_refresh(self.load_notifications)
 
     @work(thread=True, exclusive=True)
     def load_notifications(self):

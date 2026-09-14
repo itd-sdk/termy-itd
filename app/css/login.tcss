@@ -4,15 +4,53 @@ Screen {
 
 #container {
     height: auto;
-    width: 60%;
+    width: 50%;
     padding: 2;
     background: $panel;
+    margin-top: 2;
+    margin-bottom: 2;
 }
 
-#container > Center > * {
+#container > Center:first-child > * {
+    margin-bottom: 2;
+}
+
+.qr-text {
+    width: auto;
+    text-align: center;
+}
+
+AuthOption {
+    height: 3;
+    padding-top: 1;
+    padding-left: 1;
+}
+
+AuthOption:hover {
+    background: $surface-lighten-1;
+}
+
+AuthOption Static:first-child {
+    width: 95%;
+}
+
+.divider {
+    color: $background-darken-3;
+}
+
+#access-warn {
+    height: 3;
+    padding-left: 1;
+    content-align: left middle;
+    border-left: heavy $warning;
+    background: $surface-lighten-1;
     margin-bottom: 1;
 }
 
-#error {
-    color: $error;
+Input {
+    margin-bottom: 1;
+}
+
+LoginScreen Button {
+    margin-top: 1;
 }

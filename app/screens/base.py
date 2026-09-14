@@ -39,7 +39,8 @@ class BaseScreen(Screen):
                 ('  Профиль', 'profile')
             ):
                 yield ClickableStatic(title, classes=f'{"active-tab" if self.screen_name == name else ""} tab {name}-tab')
-                yield Static('━━━━━━━━━━━━━━━━━━━━━━━', classes='tab-divider')
+
+                yield Static('━' * 100, classes='tab-divider')
             yield ClickableStatic('termy-itd by @fdg', classes='about', id='about')
         yield Footer()
 
