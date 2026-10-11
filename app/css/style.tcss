@@ -1,10 +1,10 @@
-#sidebar {
-    dock: left;
+BaseNavigationWidget {
     background: $panel;
-    padding: 1;
-    width: 25;
 }
 
+#logo {
+    width: auto;
+}
 #logo * {
     margin-bottom: 1;
 }
@@ -12,21 +12,6 @@
     margin-left: 8;
 }
 
-.tab {
-    padding: 1;
-    # border-right: outer black;
-    # border-bottom: outer black;
-
-}
-.tab:hover {
-    background: $surface-lighten-1;
-}
-.active-tab {
-    text-style: bold;
-    background: $surface;
-    # border-bottom: tall black;
-    # border-right: tall black;
-}
 .tab-divider {
     /*outline-top: wide #000;*/
     color: $background-darken-3;
@@ -117,4 +102,8 @@ EnGlyph {
 }
 .dim {
     color: $foreground-muted;
+}
+
+Tab {
+    width: auto;
 }

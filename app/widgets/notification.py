@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from itd import Post
 from itd.enums import LoadStatus, NotificationTargetType
 from itd.models.notification import Notification
@@ -10,8 +12,12 @@ from textual.widgets import Static
 
 from app.widgets.shared import Avatar, ClickableStatic, DisplayName
 
+if TYPE_CHECKING:
+    from app.main import TermyITDApp
+
 
 class NotificationWidget(Widget, can_focus=True):
+    app: 'TermyITDApp'
     BINDINGS = [Binding('a', 'open_actor', 'Открыть профиль актора'), Binding('enter', 'open_target', 'Открыть объект'), Binding('r', 'read', 'Прочитать')]
 
     def __init__(self, notification: Notification):
@@ -25,7 +31,7 @@ class NotificationWidget(Widget, can_focus=True):
         with Vertical():
             with Horizontal(classes='display-name'):
                 yield DisplayName(self.notification.actor)
-                yield Static(self.notification.get_text().replace(self.notification.actor.display_name, '').strip(), classes='notification-text')
+                yield Static(self.notification.get_text(actor=False), classes='notification-text')
                 with Horizontal(classes='notification-actions'):
                     yield ClickableStatic('󰏋', classes='open-actor')
                     if self.notification.target_id is not None:
@@ -50,23 +56,24 @@ class NotificationWidget(Widget, can_focus=True):
     def action_open_target(self):
         # self.action_read()
         if self.notification.target_id and self.notification.target_type == NotificationTargetType.POST:
-            from app.screens.post import PostScreen  # circular import
+            from app.screens.post import PostPage  # circular import
 
-            self.app.push_screen(PostScreen(Post(self.notification.target_id)))
+            self.app.push_page(PostPage(Post(self.notification.target_id)))
         else:
             self.notify(f'not implemented for {self.notification.target_type}', severity='error')
 
     @work(thread=True)
     def load_user(self):
-        self.notification.actor.refresh()
+        if self.notification.actor:
+            self.notification.actor.refresh()
 
     async def action_open_actor(self):
-        from app.screens import UserScreen
+        from app.screens import UserPage
 
-        if self.notification.actor.load_status != LoadStatus.FULL:
+        if self.notification.actor and self.notification.actor.load_status != LoadStatus.FULL:
             await self.load_user().wait()
 
-        await self.app.push_screen(UserScreen(self.notification.actor))
+        await self.app.push_page(UserPage(self.notification.actor))
 
     def action_read(self):
         if self.notification.is_read:
@@ -74,7 +81,7 @@ class NotificationWidget(Widget, can_focus=True):
             return
         self.notification.read()
         self._read()
-        self.app.update_notifications_count()  # ty: ignore[unresolved-attribute]
+        self.app.update_notifications_count()
 
     def _read(self):
         self.notification.is_read = True

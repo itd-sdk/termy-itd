@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import TYPE_CHECKING, Iterable
 
 from itd import User
 from itd.enums import AttachType
@@ -16,6 +16,9 @@ from textual_image.widget import HalfcellImage
 
 from app.cache import get_and_maybe_write
 from app.dialogs import CarouselDialog
+
+if TYPE_CHECKING:
+    from app.main import TermyITDApp
 
 
 class ClickableStatic(Static):
@@ -102,25 +105,38 @@ class ImageCarousel(HorizontalScroll):
 
 
 class Avatar(Static):
-    def __init__(self, user: User, clickable: bool = True, *, classes: str | None = None):
-        super().__init__(user.avatar, classes=classes)
+    app: 'TermyITDApp'
+
+    def __init__(self, user: User | None, clickable: bool = True, *, classes: str | None = None):
+        if not user:
+            avatar = '?'
+        elif user.avatar:  # can't rely on avatar becuase it loads only on full get
+            avatar = user.avatar
+        elif user.possible_url_avatar and not user.possible_url_avatar.startswith('http'):  # possible user avatar can contain emoji
+            avatar = user.possible_url_avatar
+        else:
+            avatar = 'U'  # url
+
+        super().__init__(avatar, classes=classes)
         self.add_class('avatar')
         self.user = user
         self.clickable = clickable
 
     async def on_click(self, event: Click):
         event.stop()
-        from app.screens.user import UserScreen
+        from app.screens.user import UserPage
 
-        await self.app.push_screen(UserScreen(self.user))
+        await self.app.push_page(UserPage(self.user))
 
 
 class DisplayName(Static):
-    def __init__(self, user: User, *, clickable: bool = True, classes: str | None = None):
-        content = '[bold underline]' + escape(user.display_name) + '[/bold underline]'
-        if user.is_subscribed:
+    app: 'TermyITDApp'
+
+    def __init__(self, user: User | None = None, *, clickable: bool = True, classes: str | None = None):
+        content = '[bold underline]' + escape(user.display_name if user else 'Неизвестность') + '[/bold underline]'
+        if user and user.is_subscribed:
             content = '[#4fc3f7]' + content + '[/#4fc3f7]'
-        if user.verified:
+        if user and user.verified:
             content += ' [#0080ff][/#0080ff]'
         self.user = user
         self.clickable = clickable
@@ -129,6 +145,6 @@ class DisplayName(Static):
 
     async def on_click(self, event: Click):
         event.stop()
-        from app.screens.user import UserScreen
+        from app.screens.user import UserPage
 
-        await self.app.push_screen(UserScreen(self.user))
+        await self.app.push_page(UserPage(self.user))

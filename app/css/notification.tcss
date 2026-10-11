@@ -35,14 +35,14 @@ NotificationWidget.blue {
      color: $foreground-muted;
 }
 
-NotificationsScreen > Horizontal {
+NotificationsPage > Horizontal {
     height: auto;
 }
-NotificationsScreen > Horizontal > .h1 {
+NotificationsPage > Horizontal > .h1 {
     width: 6fr;
 }
 
-NotificationsScreen > Horizontal > Button {
+NotificationsPage > Horizontal > Button {
     width: 1fr;
 }
 

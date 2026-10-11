@@ -5,9 +5,9 @@ from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
 from textual.widgets import LoadingIndicator, Static
 from textual_image.widget import SixelImage
+from textual_nav import NavPage
 
 from app.cache import get_and_maybe_write
-from app.screens.base import BaseScreen
 from app.widgets import PostsScroll, PostsWidget
 from app.widgets.shared import Avatar, ClickableStatic, DisplayName
 
@@ -19,13 +19,12 @@ class Counter(ClickableStatic):
         self.counter_value = value
 
 
-class UserScreen(BaseScreen):
-    screen_name = 'user'
-    CSS_PATH = '../css/user.tcss'
-    BINDINGS = [Binding('escape', 'app.pop_screen', 'Назад'), Binding('f5', 'refresh', 'Обновить')]
+class UserPage(NavPage, tab_name='Профиль', tab_icon=''):
+    # CSS_PATH = '../css/user.tcss'
+    BINDINGS = [Binding('escape', 'pop', 'Назад'), Binding('f5', 'refresh', 'Обновить')]
 
     def __init__(self, user: User | None = None):
-        super().__init__(_log=False)
+        super().__init__()
         self.user = user or User(self.app.client.user_id)  # ty: ignore
         self.log(f'open user screen username={user.username if user else "me"}')
         if user is None:
@@ -89,7 +88,7 @@ class UserScreen(BaseScreen):
         self.log('load user')
         self.user.refresh()
         self.refresh(recompose=True)
-        self.call_after_refresh(self.load_banner)
+        self.app.call_from_thread(self.set_timer, 0.5, self.load_banner)  # todo # p.s call_after_refresh not works
         if not self.user.posts:
             self.call_after_refresh(lambda: self.query_one(PostsWidget).load_posts())
 

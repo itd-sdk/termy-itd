@@ -1,4 +1,4 @@
-Screen {
+LoginPage {
     align: center middle;
 }
 
@@ -51,6 +51,6 @@ Input {
     margin-bottom: 1;
 }
 
-LoginScreen Button {
+LoginPage Button {
     margin-top: 1;
 }

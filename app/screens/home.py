@@ -1,14 +1,12 @@
 from itd import Posts
 from textual.app import ComposeResult
 from textual.widgets import TabbedContent, TabPane
+from textual_nav import NavPage
 
-from app.screens.base import BaseScreen
 from app.widgets import PostsScroll, PostsWidget
 
 
-class HomeScreen(BaseScreen):
-    screen_name = 'home'
-
+class HomePage(NavPage, tab_name='Главная', tab_icon='󱀈'):
     def compose(self) -> ComposeResult:
         yield from super().compose()
         with TabbedContent():

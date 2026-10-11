@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import TYPE_CHECKING
 
 from itd import ITDClient, ITDConfig, init_client
 from itd.core.auth import AccessAuth, RefreshAuth
@@ -9,11 +10,14 @@ from textual.binding import Binding
 from textual.containers import Center, Horizontal, Vertical
 from textual.message import Message
 from textual.reactive import reactive
-from textual.screen import Screen
 from textual.widgets import Button, Input, LoadingIndicator, Static
 from textual_englyph import EnGlyphText
+from textual_nav import NavPage
 
 from app.widgets.qr import QRWidget
+
+if TYPE_CHECKING:
+    from app.main import TermyITDApp
 
 
 class AuthOption(Horizontal):
@@ -45,9 +49,10 @@ class State(Enum):
     no = 'no'
 
 
-class LoginScreen(Screen):
+class LoginPage(NavPage, tab_name='login'):
     BINDINGS = [Binding('escape', 'back')]
-    CSS_PATH = '../css/login.tcss'
+    app: 'TermyITDApp'
+    # CSS_PATH = '../css/login.tcss'
 
     state: reactive[State] = reactive(State.start, recompose=True)
     qr_status: reactive[str] = reactive('pending', recompose=True)
@@ -85,11 +90,9 @@ class LoginScreen(Screen):
 
             if self.state == State.qr:
                 if self.qr is None:
-                    self.log('rendee')
                     with Center():
                         yield LoadingIndicator()
                 else:
-                    self.log('render')
                     assert self.qr.qr
                     with Center():
                         yield Static('Отсканируйте QR код в приложении', classes='qr-text')
@@ -131,7 +134,7 @@ class LoginScreen(Screen):
 
         try:
             if event.button.id != 'auth-qr':
-                client = init_client(
+                self.app.client = init_client(
                     'termy-itd',
                     auth=RefreshAuth(self.query_one('#refresh', Input).value)
                     if self.state == State.refresh
@@ -149,7 +152,7 @@ class LoginScreen(Screen):
                 )
             else:
                 assert self.qr
-                client = self.qr.get_client(
+                self.app.client = self.qr.get_client(
                     'termy-itd',
                     config=ITDConfig(  # todo куда нибудь вынести отдельно чтобы не дублировалось с мейном
                         'client',
@@ -169,7 +172,8 @@ class LoginScreen(Screen):
         except AccessTokenExpiredError, SessionExpiredError:
             self.query_one('.error', Static).content = 'Токен истек'
         else:
-            self.dismiss(client)
+            self.app.nav_visible = True
+            self.switch('Главная')
 
     def on_auth_option_clicked(self, event: AuthOption.Clicked):
         self.state = event.state

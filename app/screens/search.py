@@ -3,9 +3,9 @@ from textual import work
 from textual.containers import Container, Horizontal, Vertical, VerticalScroll
 from textual.events import Click
 from textual.widgets import Button, ContentSwitcher, Input, Static
+from textual_nav import NavApp, NavPage
 
-from app.screens.base import BaseScreen
-from app.screens.user import UserScreen
+from app.screens.user import UserPage
 from app.widgets.shared import Avatar, DisplayName
 
 
@@ -43,6 +43,8 @@ class ClanWidget(Horizontal):
 
 
 class UserWidget(Horizontal):
+    app: NavApp
+
     def __init__(self, place: int, user: User):
         super().__init__()
         self.user = user
@@ -57,12 +59,11 @@ class UserWidget(Horizontal):
 
     async def on_click(self, event: Click):
         event.stop()
-        await self.app.push_screen(UserScreen(self.user))
+        await self.app.push_page(UserPage(self.user))
 
 
-class SearchScreen(BaseScreen):
-    screen_name = 'search'
-    CSS_PATH = '../css/search.tcss'
+class SearchPage(NavPage, tab_name='Поиск', tab_icon=''):
+    # CSS_PATH = '../css/search.tcss'
 
     def compose(self):
         yield from super().compose()

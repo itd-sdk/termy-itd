@@ -1,28 +1,24 @@
 from itd import Post
-from itd.models.comment import Comment
 from itd.enums import LoadStatus
 from itd.exceptions import BannedWordError, NotFoundError
+from itd.models.comment import Comment
 from textual import work
 from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical, VerticalScroll
 from textual.widgets import Button, Input, LoadingIndicator, Static
+from textual_nav import NavPage
 
-from app.screens.base import BaseScreen
 from app.widgets import CommentWidget, PostWidget
 from app.widgets.shared import ClickableStatic
 
 
-class PostScreen(BaseScreen):
-    BINDINGS = [
-        Binding('f5', 'refresh', 'Обновить'),
-        Binding('escape', 'app.pop_screen', 'Назад'),
-        Binding('c', 'focus_input', 'Сфокусироваться на поле ввода')
-    ]
+class PostPage(NavPage):
+    BINDINGS = [Binding('f5', 'refresh', 'Обновить'), Binding('escape', 'pop', 'Назад'), Binding('c', 'focus_input', 'Сфокусироваться на поле ввода')]
     # CSS_PATH = '../css/post.tcss'
 
     def __init__(self, post: Post) -> None:
-        super().__init__(_log=False)
+        super().__init__()
         self.current_tab = 'post'
         self.post = post
         self.replying_comment: Comment | None = None
@@ -35,7 +31,7 @@ class PostScreen(BaseScreen):
             yield LoadingIndicator()  # я займу все место и тд
             return
 
-        yield Static('[@click=app.pop_screen][/] Пост', id='heading')
+        yield Static('[@click=pop][/] Пост', id='heading')
         with VerticalScroll():
             yield PostWidget(self.post)
         with Horizontal():
@@ -52,7 +48,7 @@ class PostScreen(BaseScreen):
         elif event.button.id == 'restore':
             self.restore_post()
         elif event.button.id == 'back':
-            self.app.pop_screen()
+            self.pop()
 
     async def on_input_submitted(self):
         self.add_comment()
@@ -163,7 +159,7 @@ class PostScreen(BaseScreen):
             self.post.refresh()
         except NotFoundError:
             self.notify('Пост не найден', severity='error')
-            self.app.pop_screen()
+            self.pop()
         else:
             self.refresh(recompose=True)
             self.call_after_refresh(self.load_comments)

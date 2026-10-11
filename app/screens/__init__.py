@@ -1,8 +1,8 @@
-from app.screens.home import HomeScreen
-from app.screens.login import LoginScreen
-from app.screens.notifications import NotificationsScreen
-from app.screens.post import PostScreen
-from app.screens.search import SearchScreen
-from app.screens.user import UserScreen
+from app.screens.home import HomePage
+from app.screens.login import LoginPage
+from app.screens.notifications import NotificationsPage
+from app.screens.post import PostPage
+from app.screens.search import SearchPage
+from app.screens.user import UserPage
 
-__all__ = ['LoginScreen', 'HomeScreen', 'PostScreen', 'NotificationsScreen', 'UserScreen', 'SearchScreen']
+__all__ = ['LoginPage', 'HomePage', 'PostPage', 'NotificationsPage', 'UserPage', 'SearchPage']

@@ -32,6 +32,6 @@ UserWidget {
 ContentSwitcher {
     height: 1fr;
 }
-SearchScreen > Horizontal {
+SearchPage > Horizontal {
     height: auto;
 }

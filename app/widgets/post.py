@@ -11,6 +11,7 @@ from textual.events import Click
 from textual.message import Message
 from textual.widget import Widget
 from textual.widgets import Button, LoadingIndicator, Static
+from textual_nav import NavApp
 
 from app.dialogs import CarouselDialog, ConfirmDialog, RepostDialog
 from app.widgets.shared import Avatar, ClickableStatic, DisplayName, ImageCarousel
@@ -54,6 +55,7 @@ def _compose_post(post: Post, original_post: bool = True) -> ComposeResult:
 
 
 class PostWidget(Widget):
+    app: NavApp
     can_focus = True
     BINDINGS = [
         Binding('a', 'open_attachments', 'Вложения'),
@@ -224,9 +226,9 @@ class PostWidget(Widget):
             self.action_open()
 
     def action_open(self):
-        from app.screens import PostScreen  # stupid circular import
+        from app.screens import PostPage  # stupid circular import
 
-        self.app.push_screen(PostScreen(self.post))
+        self.app.push_page(PostPage(self.post))
 
     def check_action(self, action: str, parameters: tuple[object, ...]) -> bool | None:
         if action in ('open', 'report', 'delete', 'like', 'repost', 'copy', 'copy_url', 'open_url', 'pin', 'focus_original_post', 'open_attachments'):

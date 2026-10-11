@@ -8,7 +8,7 @@ module-root = ''
 
 [project]
 name = "termy-itd"
-version = "0.1.0.dev1"
+version = "0.1.0.dev2"
 description = "Terminal client for итд.com"
 readme = "README.md"
 requires-python = ">=3.14"
@@ -22,11 +22,18 @@ dependencies = [
     "textual-englyph>=0.5.4",
     "textual-image==0.12.0",
     "textual-imageview>=0.1.1",
+    "textual-nav",
+]
+
+[dependency-groups]
+dev = [
+    "textual-dev>=1.8.0",
 ]
 
 [tool.uv.sources]
 itd-sdk = { git = "https://github.com/itd-sdk/itd-sdk" }
 textual-image = { git = "https://github.com/lnqs/textual-image" }
+textual-nav = { git = "https://github.com/fi-res/textual_nav" }
 
 [tool.ruff]
 line-length = 160

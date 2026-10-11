@@ -4,13 +4,12 @@ from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, VerticalScroll
 from textual.widgets import Button, LoadingIndicator, Static
+from textual_nav import NavPage
 
-from app.screens.base import BaseScreen
 from app.widgets import NotificationWidget
 
 
-class NotificationsScreen(BaseScreen):
-    screen_name = 'notifications'
+class NotificationsPage(NavPage, tab_name='Уведомления', tab_icon=''):
     BINDINGS = [Binding('R', 'read_all', 'Прочитать все уведы')]
 
     def compose(self) -> ComposeResult:
