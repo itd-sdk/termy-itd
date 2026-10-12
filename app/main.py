@@ -7,6 +7,7 @@ from textual.logging import TextualHandler
 from textual_nav import NavApp
 
 from app.screens import HomePage, LoginPage, NotificationsPage, SearchPage, UserPage
+from app.screens.event import EventPage
 from app.widgets.navbar import TermyNavigationDrawer
 
 setup_logging('debug', colorful=True).addHandler(TextualHandler())
@@ -20,9 +21,10 @@ class TermyITDApp(NavApp):
         'css/notification.tcss',
         'css/login.tcss',
         'css/search.tcss',
-        'css/user.tcss'
+        'css/user.tcss',
+        'css/event.tcss'
     ]  # https://github.com/Textualize/textual/discussions/4509
-    PAGES = [HomePage, NotificationsPage, SearchPage, UserPage]
+    PAGES = [HomePage, SearchPage, EventPage, NotificationsPage, UserPage]
     NAV_TYPE = TermyNavigationDrawer
     client: ITDClient  # = init_client('termy-itd')
     page_visible = False  # do not show home page by init because we need to check is client working, then decide go login or home

@@ -1,0 +1,9 @@
+EventPage {
+    align: center middle;
+}
+EventPage > Center > * {
+    width: auto;
+}
+EventPage > Center > Button {
+    margin-top: 1;
+}
