@@ -150,7 +150,7 @@ class PostPage(NavPage):
         for comment in self.post.comments:
             self.app.call_from_thread(scroll.mount, CommentWidget(comment), before=loading)
 
-        loading.remove()
+        self.app.call_from_thread(loading.remove)
 
     @work(thread=True, exclusive=True)
     def load_post(self):
@@ -180,3 +180,6 @@ class PostPage(NavPage):
             Horizontal(Button('Назад', id='back'), Button('Восстановить', id='restore', variant='error'), classes='screen-deleted'),
             after='.screen-deleted-text'
         )
+
+    def action_pop(self):
+        self.pop()

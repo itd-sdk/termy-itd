@@ -126,7 +126,7 @@ class Avatar(Static):
         event.stop()
         from app.screens.user import UserPage
 
-        await self.app.push_page(UserPage(self.user))
+        self.app.push_page(UserPage(self.user))
 
 
 class DisplayName(Static):
@@ -147,4 +147,4 @@ class DisplayName(Static):
         event.stop()
         from app.screens.user import UserPage
 
-        await self.app.push_page(UserPage(self.user))
+        self.app.push_page(UserPage(self.user))

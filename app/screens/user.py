@@ -118,3 +118,6 @@ class UserPage(NavPage, tab_name='Профиль', tab_icon=''):
 
     def action_refresh(self):
         self.refresh_user()
+
+    def action_pop(self):
+        self.pop()

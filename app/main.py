@@ -4,6 +4,7 @@ from itd.exceptions import AccessTokenExpiredError, InsufficientAuthLevelError, 
 from itd.models.notification import Notification
 from textual import work
 from textual.logging import TextualHandler
+from textual.reactive import reactive
 from textual_nav import NavApp
 
 from app.screens import HomePage, LoginPage, NotificationsPage, SearchPage, UserPage
@@ -27,7 +28,7 @@ class TermyITDApp(NavApp):
     PAGES = [HomePage, SearchPage, EventPage, NotificationsPage, UserPage]
     NAV_TYPE = TermyNavigationDrawer
     client: ITDClient  # = init_client('termy-itd')
-    page_visible = False  # do not show home page by init because we need to check is client working, then decide go login or home
+    page_visible = reactive(False, init=False)  # do not show home page by init because we need to check is client working, then decide go login or home
 
     def __init__(self, ansi_color: bool = False):
         super().__init__(ansi_color=ansi_color)
