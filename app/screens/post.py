@@ -136,34 +136,37 @@ class PostPage(NavPage):
                 self.action_cancel_reply()
             self.app.call_from_thread(button.set_loading, False)
 
-    @work(thread=True, exclusive=True)
+    @work(thread=True, exclusive=True, group='comments')
     def load_comments(self):
         if self.post.comments_count == 0:
             return
-        self.log('load comments')
+        self.log('post.load_comments')
         loading = LoadingIndicator()
         scroll = self.query_one(VerticalScroll)
-        self.app.call_from_thread(scroll.mount, loading, after=1)
+        self.app.call_from_thread(scroll.mount, loading, after=0)
 
         if not self.post.comments:
             self.post.comments.load(50)
-        for comment in self.post.comments:
-            self.app.call_from_thread(scroll.mount, CommentWidget(comment), before=loading)
 
+        self.app.call_from_thread(scroll.mount_all, [CommentWidget(comment) for comment in self.post.comments], before=loading)
         self.app.call_from_thread(loading.remove)
 
     @work(thread=True, exclusive=True)
     def load_post(self):
-        self.log('load post')
+        self.log('post.load_post')
         try:
             self.post.refresh()
         except NotFoundError:
             self.notify('Пост не найден', severity='error')
-            self.pop()
+            self.app.call_from_thread(self.pop)
         else:
-            self.refresh(recompose=True)
-            self.call_after_refresh(self.load_comments)
-            self.call_after_refresh(lambda: self.query_one(PostWidget).focus())
+
+            async def _():
+                await self.recompose()
+                self.query_one(PostWidget).focus()
+                self.load_comments()
+
+            self.call_after_refresh(_)
 
     def on_mount(self):
         if self.post.load_status != LoadStatus.FULL:
