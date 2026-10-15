@@ -1,8 +1,12 @@
 from webbrowser import open
 
 from itd import Post, Posts
+from itd.enums import SpanType
 from itd.models.post import _BasePosts
+from itd.models.span import Span as ItdSpan
 from pyperclip import copy
+from rich.style import Style
+from rich.text import Span, Text
 from textual import work
 from textual.app import ComposeResult
 from textual.binding import Binding
@@ -15,6 +19,25 @@ from textual_nav import NavApp
 
 from app.dialogs import CarouselDialog, ConfirmDialog, RepostDialog
 from app.widgets.shared import Avatar, ClickableStatic, DisplayName, ImageCarousel
+
+
+def _itd_span_to_rich(span: ItdSpan) -> Span:
+    return Span(
+        start=span.offset,
+        end=span.offset + span.length,
+        style={
+            SpanType.BOLD: 'bold',
+            SpanType.ITALIC: 'italic',
+            SpanType.HASHTAG: 'underline bold',
+            SpanType.LINK: Style(underline=True, link=span.url),
+            SpanType.MENTION: 'underline bold',
+            SpanType.MONOSPACE: '#427c42 on #0a0a0a',
+            SpanType.QUOTE: 'dim italic',  # мб когдаа нибудь добавят
+            SpanType.SPOILER: '#9c9c9c on white',  # todo
+            SpanType.STRIKE: 'strike',
+            SpanType.UNDERLINE: 'underline'
+        }[span.type]
+    )
 
 
 def _compose_post(post: Post, original_post: bool = True) -> ComposeResult:
@@ -37,7 +60,7 @@ def _compose_post(post: Post, original_post: bool = True) -> ComposeResult:
                 yield ClickableStatic('󰆴', classes='delete')
 
     if post.content:
-        yield Static(post.content)
+        yield Static(Text(post.content, spans=[_itd_span_to_rich(span) for span in post.spans]))
 
     if post.attachments:
         yield ImageCarousel(post.attachments)
