@@ -59,7 +59,7 @@ class UserWidget(Horizontal):
 
     async def on_click(self, event: Click):
         event.stop()
-        await self.app.push_page(UserPage(self.user))
+        self.app.push_page(UserPage(self.user))
 
 
 class SearchPage(NavPage, tab_name='Поиск', tab_icon=''):

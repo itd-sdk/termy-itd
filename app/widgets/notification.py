@@ -73,7 +73,7 @@ class NotificationWidget(Widget, can_focus=True):
         if self.notification.actor and self.notification.actor.load_status != LoadStatus.FULL:
             await self.load_user().wait()
 
-        await self.app.push_page(UserPage(self.notification.actor))
+        self.app.push_page(UserPage(self.notification.actor))
 
     def action_read(self):
         if self.notification.is_read:
