@@ -158,3 +158,9 @@ PostPage > Horizontal {
     align: center middle;
     margin-top: 2;
 }
+
+.post-event-actors {
+    background: $surface-lighten-2;
+    padding-left: 2;
+    # margin-bottom: 1;
+}
