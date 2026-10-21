@@ -41,5 +41,15 @@ Counter {
 }
 
 .user-info-username {
-  margin-left: 1;
+    margin-left: 1;
+    width: auto;
+}
+
+# .user-curtains-donate {
+#     text-align: right;
+#     margin-right: 25;
+# }
+.user-extra-info > * {
+    width: auto;
+    margin-right: 10;
 }

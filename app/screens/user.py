@@ -45,18 +45,39 @@ class UserPage(NavPage, tab_name='Профиль', tab_icon=''):
                     yield Avatar(self.user, clickable=False, classes='blue' if self.user.is_subscribed else '')
                     with Vertical():
                         with Horizontal():
+                            self.log(self.user.event_profile.curtains.available)
                             yield DisplayName(self.user, clickable=False)
                             yield Static(f'@{self.user.username}', classes='user-info-username')
 
                         if self.user.bio:
                             yield Static(self.user.bio, classes='bio')
 
-                        if self.user.online:
-                            yield Static('Онлайн', classes='online')
-                        elif self.user.last_seen:
-                            yield Static(f'Был {self.user.last_seen}', classes='last-seen')
-                        else:
-                            yield Static('Был хз когда', classes='last-seen')
+                        with Horizontal(classes='user-extra-info'):
+                            if self.user.online:
+                                yield Static('Онлайн', classes='online')
+                            elif self.user.last_seen:
+                                yield Static(f'Был {self.user.last_seen}', classes='last-seen')
+                            else:
+                                yield Static('Был хз когда', classes='last-seen')
+
+                            yield Static(
+                                f'[b]Мелки:[/b] [{"green" if self.user.event_profile.curtains.available else "red"}]{self.user.event_profile.curtains.amount}/100[/]',
+                                classes='user-curtains-donate'
+                            )
+                            # 0-20  17 тлеет red
+                            # 20-45  34 41 мерцает orange
+                            # 45-65  45 62 ровная yellow
+                            # 65-85  67 84 светится green
+                            # 85-100 85 97 сияет cyan
+
+                            aura = self.user.event_profile.aura
+                            if aura:
+                                color = 'red' if aura <= 20 else 'orange' if aura <= 45 else 'yellow' if aura <= 65 else 'green' if aura <= 85 else 'cyan'
+                                name = {'red': 'Тлеет', 'orange': 'Мерцает', 'yellow': 'Ровная', 'green': 'Светится', 'cyan': 'Сияет'}[color]
+                                yield Static(f'[b]Аура:[/b] [{color}]{aura}[/] - [{color} italic]{name}[/]')
+
+                            if self.user.event_profile.curtains.closed:
+                                yield Static('Шторы закрыты', classes='error')
 
                 with Horizontal():
                     yield Counter('подписчиков', self.user.followers_count or 0)
@@ -87,6 +108,7 @@ class UserPage(NavPage, tab_name='Профиль', tab_icon=''):
     def load_user(self):
         self.log('load user')
         self.user.refresh()
+        self.user.event_profile.refresh()
         self.refresh(recompose=True)
         self.app.call_from_thread(self.set_timer, 0.5, self.load_banner)  # todo # p.s call_after_refresh not works
         if not self.user.posts:
