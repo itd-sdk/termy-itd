@@ -2,7 +2,7 @@ from webbrowser import open
 
 from itd import Post, Posts
 from itd.enums import SpanType
-from itd.models.post import RedPen, _BasePosts
+from itd.models.post import _BasePosts
 from itd.models.span import Span as ItdSpan
 from pyperclip import copy
 from rich.style import Style
@@ -40,18 +40,6 @@ def _itd_span_to_rich(span: ItdSpan) -> Span:
     )
 
 
-def _itd_to_rich(content: str, red_pens: list[RedPen], spans: list[ItdSpan]) -> Text:
-    text = Text(content, spans=[_itd_span_to_rich(span) for span in spans])
-    offset = 0
-    red_pens.sort(key=lambda a: a.start)
-    for red_pen in red_pens:
-        text.stylize('strike', red_pen.start + offset, red_pen.end + offset)
-        text = text[: red_pen.end + offset] + ' ' + red_pen.replacement + text[red_pen.end + offset :]
-        text.stylize('red', red_pen.end + offset, red_pen.end + offset + len(red_pen.replacement) + 1)
-        offset += len(red_pen.replacement) + 1
-    return text
-
-
 def _compose_post(post: Post, original_post: bool = True) -> ComposeResult:
     if post.is_pinned:
         yield Static('󰐃 Закрепленный пост', classes='pinned-post')
@@ -72,11 +60,7 @@ def _compose_post(post: Post, original_post: bool = True) -> ComposeResult:
                 yield ClickableStatic('󰆴', classes='delete')
 
     if post.content:
-        yield Static(_itd_to_rich(post.mask_content(), post.red_pens, post.spans))
-        if post.red_pens:
-            yield Static(f'Исправлено {", ".join([f"[underline]{u.actor.display_name}[/]" for u in post.red_pen.claims])}', classes='post-event-actors')
-        if post.correctors:
-            yield Static(f'Замазано {", ".join([f"[underline]{u.actor.display_name}[/]" for u in post.correctors])}', classes='post-event-actors')
+        yield Static(Text(post.content, spans=[_itd_span_to_rich(span) for span in post.spans]))
 
     if post.attachments:
         yield ImageCarousel(post.attachments)
