@@ -1235,7 +1235,7 @@ wheels = [
 [[package]]
 name = "textual-nav"
 version = "0.1.0"
-source = { git = "https://github.com/fi-res/textual_nav#15b0c93eab412b7c90c6f659e8f19a072451846d" }
+source = { git = "https://github.com/fi-res/textual_nav#e35c2cb12f634ddfee10140df0b715b3131d4062" }
 dependencies = [
     { name = "textual" },
     { name = "textual-dev" },

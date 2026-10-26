@@ -5,6 +5,7 @@ from itd.models.notification import Notification
 from textual import work
 from textual.logging import TextualHandler
 from textual.reactive import reactive
+from textual.widgets import Footer
 from textual_nav import NavApp
 
 from app.cache import clean_old_cache
@@ -30,6 +31,7 @@ class TermyITDApp(NavApp):
     NAV_TYPE = TermyNavigationDrawer
     client: ITDClient  # = init_client('termy-itd')
     page_visible = reactive(False, init=False)  # do not show home page by init because we need to check is client working, then decide go login or home
+    footer = True
 
     def __init__(self, ansi_color: bool = False):
         super().__init__(ansi_color=ansi_color)
