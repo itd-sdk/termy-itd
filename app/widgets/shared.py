@@ -108,16 +108,7 @@ class Avatar(Static):
     app: 'TermyITDApp'
 
     def __init__(self, user: User | None, clickable: bool = True, *, classes: str | None = None):
-        if not user:
-            avatar = '?'
-        elif user.avatar:  # can't rely on avatar becuase it loads only on full get
-            avatar = user.avatar
-        elif user.possible_url_avatar and not user.possible_url_avatar.startswith('http'):  # possible user avatar can contain emoji
-            avatar = user.possible_url_avatar
-        else:
-            avatar = 'U'  # url
-
-        super().__init__(avatar, classes=classes)
+        super().__init__(user.avatar if user else '?', classes=classes)
         self.add_class('avatar')
         self.user = user
         self.clickable = clickable

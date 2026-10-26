@@ -1,4 +1,6 @@
+from datetime import datetime, timedelta
 from io import BytesIO
+from os.path import getatime
 from pathlib import Path
 
 from itd.models.file import PostAttach
@@ -39,3 +41,9 @@ def get_and_maybe_write(attachment: PostAttach | str) -> BytesIO:
     buf.seek(0)
 
     return buf
+
+
+def clean_old_cache():
+    for file in CACHE_DIR.iterdir():
+        if datetime.fromtimestamp(getatime(file.absolute())) < datetime.now() - timedelta(days=7):
+            file.unlink()

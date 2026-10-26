@@ -20,7 +20,8 @@ class EventPage(NavPage, tab_name='Ивент', tab_icon='󱠽'):
             with Center():
                 yield Static(self.portal.url, classes='dim')
         else:
-            yield Static('Ивент не активен')
+            with Center():
+                yield Static('Нет активного ивента')
 
     def on_button_pressed(self):
         assert self.portal

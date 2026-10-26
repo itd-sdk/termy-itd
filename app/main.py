@@ -7,6 +7,7 @@ from textual.logging import TextualHandler
 from textual.reactive import reactive
 from textual_nav import NavApp
 
+from app.cache import clean_old_cache
 from app.screens import HomePage, LoginPage, NotificationsPage, SearchPage, UserPage
 from app.screens.event import EventPage
 from app.widgets.navbar import TermyNavigationDrawer
@@ -47,6 +48,7 @@ class TermyITDApp(NavApp):
 
     def on_mount(self, event):  # ty: ignore
         self.log('app.mount')
+        clean_old_cache()  # can't move to worker beacuse it can remove file just while it will read it in home page
 
         try:
             self.client = init_client(
