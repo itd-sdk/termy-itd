@@ -99,7 +99,7 @@ class SearchPage(NavPage, tab_name='Поиск', tab_icon=''):
 
     @work(thread=True, exclusive=True)
     def load_hashtags(self):
-        self.log('load hashtags')
+        self.log('search.load_hashtags')
         hashtags = self.query_one('#hashtags', VerticalScroll)
         self.app.call_from_thread(hashtags.set_loading, True)
 
@@ -110,7 +110,7 @@ class SearchPage(NavPage, tab_name='Поиск', tab_icon=''):
 
     @work(thread=True, exclusive=True)
     def load_clans(self):
-        self.log('load clans')
+        self.log('search.load_clans')
         clans = self.query_one('#clans', VerticalScroll)
         self.app.call_from_thread(clans.set_loading, True)
 
@@ -121,7 +121,7 @@ class SearchPage(NavPage, tab_name='Поиск', tab_icon=''):
 
     @work(thread=True, exclusive=True)
     def load_users(self):
-        self.log('load top users')
+        self.log('search.load_users')
         users = self.query_one('#users', Vertical)
         self.app.call_from_thread(users.set_loading, True)
 
@@ -139,7 +139,7 @@ class SearchPage(NavPage, tab_name='Поиск', tab_icon=''):
     def on_button_pressed(self, event: Button.Pressed):
         event.stop()
         if event.button.id == 'all-top':
-            self.app.open_url('https://itdsdk.qzz.io/ebdi')
+            self.app.open_url('https://itdsdk.qzz.io/ebdi/users')
         elif event.button == 'search-button':
             self.search()
 

@@ -5,7 +5,7 @@ from itd.models.notification import Notification
 from textual import work
 from textual.logging import TextualHandler
 from textual.reactive import reactive
-from textual.widgets import Footer
+from textual.widgets import Footer, LoadingIndicator
 from textual_nav import NavApp
 
 from app.cache import clean_old_cache
@@ -50,6 +50,8 @@ class TermyITDApp(NavApp):
 
     def on_mount(self, event):  # ty: ignore
         self.log('app.mount')
+        loading = LoadingIndicator()
+        self.mount(loading)
         clean_old_cache()  # can't move to worker beacuse it can remove file just while it will read it in home page
 
         try:
@@ -85,10 +87,12 @@ class TermyITDApp(NavApp):
             pass  # need to login
         else:
             self.log('app.mount startup')
+            loading.remove()
             self.startup()
             return
 
         event.prevent_default()
+        loading.remove()
         self.log('app.mount login')
         self.nav_visible = False
         self.page_visible = True

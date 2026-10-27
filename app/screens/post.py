@@ -54,28 +54,31 @@ class PostPage(NavPage):
         self.add_comment()
 
     async def on_comment_widget_replied(self, event: CommentWidget.Replied):
+        self.log(
+            f'post.on_comment_widget_replied comment={event.comment.id} base_comment={event.comment._base_comment.id if event.comment._base_comment else None}'
+        )
         event.stop()
         if self.replying_comment is not None:
             await self.action_cancel_reply()
 
-        self.replying_comment = event.comment
-        if self.replying_comment.content:
-            if len(self.replying_comment.content) > 100:
-                content = self.replying_comment.content[:100].split('\n')[0]
+        if event.comment.content:
+            if len(event.comment.content) > 100:
+                content = event.comment.content[:100].split('\n')[0]
             else:
-                content = self.replying_comment.content
-        elif self.replying_comment.attachments:
-            content = f'[i]Вложения ({len(self.replying_comment.attachments)}шт)[/i]'
+                content = event.comment.content
+        elif event.comment.attachments:
+            content = f'[i]Вложения ({len(event.comment.attachments)}шт)[/i]'
         else:
             content = 'Пустой комментарий??'
         await self.mount(
             Horizontal(
-                Static(f'  {self.replying_comment.author.avatar} [bold underline]{self.replying_comment.author.display_name}[/]  {content}'),
+                Static(f'  {event.comment.author.avatar} [bold underline]{event.comment.author.display_name}[/]  {content}'),
                 ClickableStatic('', classes='error'),
                 id='reply-header'
             ),
             after='VerticalScroll'
         )
+        self.replying_comment = event.comment._base_comment or event.comment
         self.query_one('#comment-input', Input).placeholder = 'Ответ..'
         self.action_focus_input()
 
@@ -99,6 +102,7 @@ class PostPage(NavPage):
 
     @work(thread=True, exclusive=True)
     def add_comment(self):
+        self.log('post.add_comment')
         button = self.query_one('#add-comment', Button)
         input = self.query_one('#comment-input', Input)
         scroll = self.query_one(VerticalScroll)
@@ -106,8 +110,15 @@ class PostPage(NavPage):
 
         try:
             if self.replying_comment is not None:
-                comment = CommentWidget(self.replying_comment.reply(input.value))
+                self.log(f'post.add_comment new reply on {self.replying_comment.id}')
+                comment = CommentWidget(
+                    self.replying_comment.reply(input.value),
+                    _base_comment=next(
+                        comment for comment in scroll.children if isinstance(comment, CommentWidget) and comment.comment.id == self.replying_comment.id
+                    )
+                )
             else:
+                self.log('post.add_comment new comment')
                 comment = CommentWidget(self.post.add_comment(input.value))
         except NotFoundError:
             self.notify('Пост не найден', severity='error')
@@ -121,13 +132,15 @@ class PostPage(NavPage):
                 for child in scroll.query(CommentWidget):
                     if child.comment.id == self.replying_comment.id:
                         if not child.comment.is_reply:
-                            if child.comment.replies_count > 1:
+                            if child.comment.replies_count > 1:  # note that we added our comment before this, so +1
                                 self.app.call_from_thread(child.query_one('.replies').mount, comment, before=1)
                             else:
                                 self.app.call_from_thread(child.mount, Vertical(comment, classes='replies'))
                         else:
                             self.app.call_from_thread(child._mount_reply, comment)
                         break
+                else:
+                    raise RuntimeError('comment not found')
 
             scroll.scroll_to_widget(comment)
             comment.focus()
