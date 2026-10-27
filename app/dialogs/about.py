@@ -18,7 +18,6 @@ class AboutDialog(ModalScreen):
             yield EnGlyphText('termy itd', font_name='casio-fx-9860gii.ttf', font_size=7, basis=(2, 3))
             yield Static(f'Версия [b]{__version__}[/b]')
             yield ClickableStatic('Автор проекта: [$primary]@fdg[/]', classes='author')
-            yield ClickableStatic('Новости этого и других проектов: [$primary]@itd_sdk[/]', classes='news')
             yield ClickableStatic(' Открыть исходный код [$primary]󰏌[/]', classes='source')
 
     def on_clickable_static_clicked(self, event: ClickableStatic.Clicked):
